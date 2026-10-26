@@ -145,3 +145,31 @@ export function parseAgentSessionList(body: unknown): AgentSessionList | null {
   const total = (body as { total?: unknown }).total;
   return { sessions, total: typeof total === "number" ? total : sessions.length };
 }
+
+/**
+ * What `flisk ui` shows for the selected agent. `not-running`: nothing answered. Otherwise the agent is up and `ready`
+ * is its `/ready` answer; `sessions` is null when it has no `/sessions` endpoint (built before that existed) or the
+ * list could not be read.
+ */
+export type AgentOverview =
+  | { state: "not-running" }
+  | { state: "up"; ready: boolean; sessions: AgentSessionList | null };
+
+/** Reads `/ready` and `/sessions` once, in parallel. Never throws: a failure is part of the answer. */
+export async function fetchAgentOverview(
+  routeUrl: string,
+  timeoutMs = 3_000,
+): Promise<AgentOverview> {
+  const [ready, list] = await Promise.all([
+    fetchAgent(agentRequest(routeUrl, "/ready"), timeoutMs),
+    fetchAgent(agentRequest(routeUrl, "/sessions"), timeoutMs),
+  ]);
+  if (ready.kind === "not-running" && list.kind === "not-running") return { state: "not-running" };
+  // /ready answers 503 with { ready: false } when the checkpoint store is down, which fetchAgent reports as "not-running".
+  const isReady = ready.kind === "ok" && (ready.body as { ready?: unknown })?.ready === true;
+  return {
+    state: "up",
+    ready: isReady,
+    sessions: list.kind === "ok" ? parseAgentSessionList(list.body) : null,
+  };
+}
