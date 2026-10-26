@@ -155,7 +155,7 @@ export function formatUpSuccess(
   if (showLogsHint) {
     lines.push("Logs: flisk logs <service>");
   }
-  lines.push("Next: flish help  # or visit https://flisk.sh/docs");
+  lines.push("Next: flisk help  # or visit https://flisk.sh/docs");
 
   return lines;
 }
@@ -606,9 +606,7 @@ export const upCommand = new Command("up")
           console.log(chalk.blue("\n🌍 Frontend URLs:"));
           for (const svc of frontends) {
             const basePath = svc.config?.basePath ?? `/${svc.name}`;
-            console.log(
-              chalk.gray(`  - ${svc.name}: ${appBase}${chalk.cyan(appendHealthPath(basePath))}`),
-            );
+            console.log(chalk.gray(`  - ${svc.name}: ${appBase}${chalk.cyan(basePath)}`));
           }
         }
 
