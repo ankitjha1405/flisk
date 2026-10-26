@@ -104,3 +104,19 @@ export function parseAgentSessionList(body) {
     const total = body.total;
     return { sessions, total: typeof total === "number" ? total : sessions.length };
 }
+/** Reads `/ready` and `/sessions` once, in parallel. Never throws: a failure is part of the answer. */
+export async function fetchAgentOverview(routeUrl, timeoutMs = 3_000) {
+    const [ready, list] = await Promise.all([
+        fetchAgent(agentRequest(routeUrl, "/ready"), timeoutMs),
+        fetchAgent(agentRequest(routeUrl, "/sessions"), timeoutMs),
+    ]);
+    if (ready.kind === "not-running" && list.kind === "not-running")
+        return { state: "not-running" };
+    // /ready answers 503 with { ready: false } when the checkpoint store is down, which fetchAgent reports as "not-running".
+    const isReady = ready.kind === "ok" && ready.body?.ready === true;
+    return {
+        state: "up",
+        ready: isReady,
+        sessions: list.kind === "ok" ? parseAgentSessionList(list.body) : null,
+    };
+}

@@ -61,3 +61,17 @@ export declare function fetchAgent(request: {
  * an agent with no sessions. Rows without a usable id are dropped; the agent owns its other fields.
  */
 export declare function parseAgentSessionList(body: unknown): AgentSessionList | null;
+/**
+ * What `flisk ui` shows for the selected agent. `not-running`: nothing answered. Otherwise the agent is up and `ready`
+ * is its `/ready` answer; `sessions` is null when it has no `/sessions` endpoint (built before that existed) or the
+ * list could not be read.
+ */
+export type AgentOverview = {
+    state: "not-running";
+} | {
+    state: "up";
+    ready: boolean;
+    sessions: AgentSessionList | null;
+};
+/** Reads `/ready` and `/sessions` once, in parallel. Never throws: a failure is part of the answer. */
+export declare function fetchAgentOverview(routeUrl: string, timeoutMs?: number): Promise<AgentOverview>;

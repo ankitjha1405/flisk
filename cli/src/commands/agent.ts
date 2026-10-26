@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 import chalk from "chalk";
 import { Command } from "commander";
+import { formatAge } from "../utils/agent-format.js";
 import {
   type AgentReply,
   type AgentSessionList,
@@ -18,21 +19,10 @@ import { createMachineEnvelope, writeMachineError } from "../utils/machine-outpu
 import { findProjectRoot } from "../utils/paths.js";
 import { buildServicePorts } from "../utils/status-ports.js";
 
+export { formatAge } from "../utils/agent-format.js";
 export { agentSessionRequest, httpGet } from "../utils/agent-sessions.js";
 
 const WATCH_INTERVAL_MS = 2_000;
-
-/** "12s ago", "5m ago", "3h ago", "2d ago"; "-" when the agent sent no time. */
-export function formatAge(iso: string | null, now: number = Date.now()): string {
-  if (!iso) return "-";
-  const at = Date.parse(iso);
-  if (Number.isNaN(at)) return iso;
-  const seconds = Math.max(0, Math.round((now - at) / 1000));
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86_400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86_400)}d ago`;
-}
 
 /** The plain-text table `flisk agent sessions <resource>` prints, one line per session. */
 export function formatSessionTable(list: AgentSessionList, now: number = Date.now()): string[] {
