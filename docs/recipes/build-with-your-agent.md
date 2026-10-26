@@ -10,6 +10,10 @@ npm install -g @flisk-sh/flisk
 
 Each entry says what you get and, folded away, the Flisk steps your agent runs. The `flisk-build` skill turns any of these prompts into those steps; you do not need to type them.
 
+Some entries start from a **starter app**: a working multi-service app in the [flisk-sh](https://github.com/flisk-sh) organisation that `flisk project <template>` clones (restaurant, SaaS, store, AI agent stack, user management). The `flisk-recipe-starters` skill picks one when your request matches.
+
+People have already asked for apps like these: by 26 Oct 2026 the [demo.flisk.sh](https://demo.flisk.sh) bot, which builds a stack when you mention it on X, had made 215 demos in [flisk-sh/demos](https://github.com/flisk-sh/demos) (one branch each, counted from the branch names: 175 web apps, 17 web3 apps, 12 agent stacks, 9 stores). The categories below follow what it builds.
+
 ## Spreadsheets and data
 
 ### A shared spreadsheet for your team
@@ -127,9 +131,28 @@ This is the blog recipe with a different name: see the `flisk-recipe-blog` skill
 Build me a small online shop with a storefront and an orders API, and run it on my laptop with Flisk.
 ```
 
-See the `flisk-recipe-shop` skill.
+See the `flisk-recipe-shop` skill, or start from the store starter (`flisk project ecommerce`: a Vue storefront and a catalog API).
 
-### Table bookings for a restaurant
+### A restaurant: bookings, kitchen and floor
+
+```text
+Build me a restaurant app with Flisk: guests book a table, the kitchen sees orders, and staff see the floor plan. Run it on my laptop.
+```
+
+You get: a booking website, a floor website for staff, and APIs for reservations, the kitchen and the menu, with a kitchen worker. It starts from the restaurant starter.
+
+<details><summary>What your agent runs</summary>
+
+```bash
+flisk project restaurant --path my-restaurant --yes
+cd my-restaurant
+flisk project --yes
+flisk up guest
+```
+
+</details>
+
+### Table bookings only
 
 ```text
 Build me a booking page for a restaurant: guests pick a time and party size, and I see today's bookings on an admin page. Run it on my laptop with Flisk.
@@ -140,7 +163,8 @@ Build me a booking page for a restaurant: guests pick a time and party size, and
 ```bash
 flisk project --yes
 flisk resource bookings --type frontend --stack bookings --yes
-flisk resource bookings-api --type backend --stack bookings --feature drizzle --yes
+flisk resource admin --type frontend --stack bookings --yes
+flisk resource bookings-api --type backend --stack bookings --feature prisma --yes
 flisk up bookings
 ```
 
@@ -154,7 +178,24 @@ flisk up bookings
 Build me a SaaS starter with sign-up, login and a billing page with two plans, and run it on my laptop with Flisk.
 ```
 
-See the `flisk-recipe-saas` skill. No real payments are taken unless you give your agent a payment provider's test key.
+See the `flisk-recipe-saas` skill, or start from the SaaS starter (`flisk project saas`: a dashboard, a checkout page and a billing API). No real payments are taken unless you give your agent a payment provider's test key.
+
+### User accounts with an admin portal
+
+```text
+Use Flisk to give me user management on my laptop: an admin site to manage users, a self-service portal, and an audit log.
+```
+
+<details><summary>What your agent runs</summary>
+
+```bash
+flisk project user-management --path my-users --yes
+cd my-users
+flisk project --yes
+flisk up admin
+```
+
+</details>
 
 ## AI agents
 
@@ -164,7 +205,7 @@ See the `flisk-recipe-saas` skill. No real payments are taken unless you give yo
 Use Flisk to build me an AI agent with an MCP tools server and a database, run it on my laptop, and tell me how to talk to the agent.
 ```
 
-See the `flisk-recipe-ai-agent` skill.
+See the `flisk-recipe-ai-agent` skill, or start from the agent stack starter (`flisk project agent-stack`: an agent with its database migrator and an MCP tools server).
 
 ### A helper that answers questions about your notes
 
@@ -194,8 +235,16 @@ Build me a blog with an admin API for writing posts, and run it on my laptop wit
 
 See the `flisk-recipe-blog` skill.
 
+## Not covered yet
+
+Web3 apps (a local chain node, contracts and an indexer) are among the demo bot's requests, but no Flisk recipe has run a chain node end to end, so there is no entry for them here.
+
 ## What was checked
 
-The steps for the shop (a website and an API) and for the AI agent (an agent, an MCP tools server and an API with a database) were run with Flisk 1.4.2 on 26 Oct 2026, and every health URL answered. The other entries use the same kinds of parts and the same commands, but they were not each run end to end. The app code itself is written by your agent, so its quality depends on the agent.
+With Flisk 1.4.2 on 26 Oct 2026:
+
+- The shop steps (a website and an API) and the AI agent steps (an agent, an MCP tools server and an API with a database) were run end to end, and every health URL answered.
+- Every other block was run up to `flisk up --dry-run`, which lists the services and URLs without starting them. That includes each starter after `flisk project --yes`.
+- The starters still keep their settings in `.tdk/`, so in 1.4.2 `flisk up` fails right after cloning with `Could not find project root`. The extra `flisk project --yes` in those blocks fixes that. The app code itself is written by your agent, so its quality depends on the agent.
 
 When something does not start, ask your agent to run `flisk doctor` and explain the result in plain words.
