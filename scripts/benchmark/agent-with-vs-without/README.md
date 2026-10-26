@@ -21,7 +21,7 @@ Needs Docker running, Tilt, `curl`, Node.js 22+, and the `claude` CLI signed in 
 | `--prompts` | `shop,ai-agent` | Prompt ids from `prompts.json` |
 | `--arms` | `flisk,no-flisk` | Arms to run |
 | `--runs` | `3` | Runs per prompt and arm |
-| `--model` | `sonnet` | Model passed to `claude --model`; the resolved model id is recorded per run |
+| `--model` | `claude-sonnet-5-5` | Model passed to `claude --model`, the same for every run; the model id the agent reports is recorded per run |
 | `--flisk-version` | `1.4.2` | npm version for the flisk arm |
 | `--timeout-min` | `30` | A run that has not finished is stopped and recorded as failed |
 | `--budget-usd` | `8` | `claude --max-budget-usd` per run |
@@ -55,6 +55,7 @@ After each run the harness stops what it started: `flisk down --prune-networks` 
 ## Guard rails and limits
 
 - The agent runs with `--permission-mode bypassPermissions`, because nobody is there to approve commands. Run it on a machine where that is acceptable. Both arms deny `sudo`, global package installs, `brew`, `docker * prune`, web search and web fetch.
+- The agent starts with a clean environment (`HOME`, `USER`, `LOGNAME`, `SHELL`, `TERM`, `LANG` and the arm's `PATH` only), so variables from the shell or app that started the harness, such as `ANTHROPIC_BASE_URL` or `CLAUDE_CODE_*`, do not reach it. Sign the CLI in first with `claude auth login`.
 - `--setting-sources project --strict-mcp-config` keeps your user settings, plugins and MCP servers out of the runs. A user-level `CLAUDE.md` or skills in `~/.claude/skills` may still be loaded by the CLI; they apply to both arms equally. Each run records the skills the agent saw (`skillsSeenByAgent`) and the ones it used (`skillsInvoked`), so check them.
 - The health URLs are the ones the agent wrote. The harness checks that they answer, not that the shop takes orders. Read `transcript.jsonl.gz` before quoting a run.
 - Docker image caches are not cleared between runs (that would also clear your own images). The first run of each arm pulls base images; the alternating order spreads that cost.

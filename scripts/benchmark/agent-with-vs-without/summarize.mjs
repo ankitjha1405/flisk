@@ -52,13 +52,23 @@ const summary = Object.entries(groups).map(([key, rs]) => {
 	for (const [name, get] of Object.entries(METRICS)) out[name] = stats(rs.filter((r) => name !== "timeToHealthySec" || r.success).map(get));
 	return out;
 });
-writeFileSync(join(dir, "summary.json"), `${JSON.stringify({ generatedAt: new Date().toISOString(), summary, runs: runs.map((r) => r.id) }, null, 2)}\n`);
+const runsPerArm = Math.max(0, ...summary.map((s) => s.runs));
+writeFileSync(join(dir, "summary.json"), `${JSON.stringify({ generatedAt: new Date().toISOString(), label: `n=${runsPerArm}`, runsPerArm, summary, runs: runs.map((r) => r.id) }, null, 2)}\n`);
 
 const env = existsSync(join(dir, "environment.json")) ? JSON.parse(readFileSync(join(dir, "environment.json"), "utf8")) : {};
-const fmt = (s, digits = 0, unit = "") => (s.n ? `${s.median.toFixed(digits)}${unit} (${s.min.toFixed(digits)}–${s.max.toFixed(digits)})` : "–");
+const fmt = (s, digits = 0, unit = "") => {
+	if (!s.n) return "–";
+	if (s.n === 1) return `${s.median.toFixed(digits)}${unit}`;
+	return `${s.median.toFixed(digits)}${unit} (${s.min.toFixed(digits)}–${s.max.toFixed(digits)})`;
+};
 const md = [];
 md.push("# Coding agent with vs without Flisk", "");
-md.push(`Same prompt, same agent (\`claude -p\`, model ${[...new Set(runs.map((r) => r.model).filter(Boolean))].join(", ") || env.requestedModel}), fresh empty folder per run. Cells are **median (min–max)**. Time to healthy counts successful runs only; the other columns count every run.`, "");
+const n = Math.max(0, ...summary.map((s) => s.runs));
+const nNote =
+	n === 1
+		? "**n=1: one run per prompt and arm.** Each cell is that single run, not a median; a second run can differ a lot."
+		: `Cells are **median (min–max)** over up to ${n} runs per prompt and arm.`;
+md.push(`Same prompt, same agent (\`claude -p\`, model ${[...new Set(runs.map((r) => r.model).filter(Boolean))].join(", ") || env.requestedModel}), fresh empty folder per run. ${nNote} Time to healthy counts successful runs only; the other columns count every run.`, "");
 md.push("| Prompt | Arm | Succeeded | Time to healthy (s) | Total tokens | Cost (USD) | Turns | Infra/config files hand-written | Tool errors | Retries after an error |");
 md.push("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|");
 for (const s of summary)

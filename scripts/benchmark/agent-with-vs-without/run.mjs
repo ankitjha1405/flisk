@@ -36,7 +36,7 @@ const { values: args } = parseArgs({
 		prompts: { type: "string", default: "shop,ai-agent" },
 		arms: { type: "string", default: "flisk,no-flisk" },
 		runs: { type: "string", default: "3" },
-		model: { type: "string", default: "sonnet" },
+		model: { type: "string", default: "claude-sonnet-5-5" },
 		"flisk-version": { type: "string", default: "1.4.2" },
 		"timeout-min": { type: "string", default: "30" },
 		"budget-usd": { type: "string", default: "8" },
@@ -369,11 +369,19 @@ async function main() {
 	mkdirSync(workdir, { recursive: true });
 	const basePath = buildBaseBin();
 	const fliskBin = installFlisk(args["flisk-version"]);
-	const envFor = (arm) => {
-		const env = { ...process.env, DISABLE_AUTOUPDATER: "1", _ZO_DOCTOR: "0" };
-		env.PATH = arm === "flisk" ? `${fliskBin}${delimiter}${basePath}` : basePath;
-		return env;
-	};
+	// A clean environment, like `env -i`: nothing from the shell or app that started the harness (for example
+	// ANTHROPIC_BASE_URL or CLAUDE_CODE_* from a desktop session) reaches the agent. USER and LOGNAME are needed for the
+	// CLI's keychain sign-in lookup on macOS.
+	const envFor = (arm) => ({
+		HOME: homedir(),
+		USER: process.env.USER ?? "",
+		LOGNAME: process.env.LOGNAME ?? process.env.USER ?? "",
+		SHELL: "/bin/zsh",
+		TERM: "xterm",
+		LANG: process.env.LANG ?? "en_US.UTF-8",
+		DISABLE_AUTOUPDATER: "1",
+		PATH: arm === "flisk" ? `${fliskBin}${delimiter}${basePath}` : basePath,
+	});
 	if (which("flisk", envFor("no-flisk").PATH)) fail("flisk is still reachable on the no-flisk PATH");
 	if (!args["skip-preflight"]) {
 		const r = sh("claude", ["-p", "Reply with OK.", "--model", args.model, "--output-format", "json", "--setting-sources", "project", "--no-session-persistence"], { cwd: workdir, env: envFor("no-flisk") });

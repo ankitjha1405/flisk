@@ -26,11 +26,12 @@ const ARMS = [
 	{ id: "no-flisk", label: "Without Flisk", color: C.other },
 ];
 const get = (prompt, arm) => summary.find((s) => s.prompt === prompt && s.arm === arm);
+const med = (stat, scale = 1) => (stat && stat.n ? stat.median / scale : undefined);
 const PANELS = [
-	{ title: "Minutes until every URL answers", value: (s) => s?.timeToHealthySec?.median / 60, fmt: (v) => v.toFixed(1) },
-	{ title: "Tokens used (millions)", value: (s) => s?.totalTokens?.median / 1e6, fmt: (v) => v.toFixed(2) },
-	{ title: "Infra/config files written by hand", value: (s) => s?.infraFilesHandWritten?.median, fmt: (v) => v.toFixed(0) },
-	{ title: "Runs that worked with no help", value: (s) => (s ? s.succeeded / s.runs : undefined), fmt: (_v, s) => `${s.succeeded}/${s.runs}`, max: 1 },
+	{ title: "Minutes to healthy", value: (s) => med(s?.timeToHealthySec, 60), fmt: (v) => v.toFixed(1), missing: "failed" },
+	{ title: "Tokens (millions)", value: (s) => med(s?.totalTokens, 1e6), fmt: (v) => v.toFixed(2) },
+	{ title: "Config files hand-written", value: (s) => med(s?.infraFilesHandWritten), fmt: (v) => v.toFixed(0) },
+	{ title: "Worked with no help", value: (s) => (s ? s.succeeded / s.runs : undefined), fmt: (_v, s) => `${s.succeeded}/${s.runs}`, max: 1 },
 ];
 
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -40,7 +41,8 @@ out.push(`<rect width="${W}" height="${H}" fill="${C.bg}"/>`);
 out.push(`<text x="60" y="78" fill="${C.ink}" font-size="38" font-weight="700">Same AI agent, same prompt: with Flisk vs without</text>`);
 const runsPer = Math.max(...summary.map((s) => s.runs));
 const model = env.requestedModel ? `Claude Code (${env.requestedModel})` : "Claude Code";
-out.push(`<text x="60" y="116" fill="${C.muted}" font-size="20">${esc(`${model}, ${runsPer} runs per bar, fresh empty folder each run. Bars show the median. Measured ${String(env.date ?? "").slice(0, 10)}.`)}</text>`);
+const runsNote = runsPer === 1 ? "n=1: one run per bar, not a median" : `n=${runsPer}: bars show the median of ${runsPer} runs`;
+out.push(`<text x="60" y="116" fill="${C.muted}" font-size="20">${esc(`${model}, fresh empty folder each run, ${runsNote}. Measured ${String(env.date ?? "").slice(0, 10)}.`)}</text>`);
 // Legend
 let lx = 60;
 for (const a of ARMS) {
@@ -55,7 +57,7 @@ const panelH = 470;
 PANELS.forEach((p, i) => {
 	const x0 = 60 + i * (panelW + 30);
 	out.push(`<rect x="${x0}" y="${top}" width="${panelW}" height="${panelH}" rx="12" fill="#161b22" stroke="${C.grid}"/>`);
-	out.push(`<text x="${x0 + 20}" y="${top + 40}" fill="${C.ink}" font-size="19" font-weight="600">${esc(p.title)}</text>`);
+	out.push(`<text x="${x0 + 20}" y="${top + 40}" fill="${C.ink}" font-size="20" font-weight="600">${esc(p.title)}</text>`);
 	const vals = PROMPTS.flatMap((pr) => ARMS.map((a) => p.value(get(pr.id, a.id)))).filter((v) => Number.isFinite(v));
 	const max = p.max ?? Math.max(...vals, 1e-9);
 	const barMaxH = 300;
@@ -69,10 +71,10 @@ PANELS.forEach((p, i) => {
 			const v = p.value(s);
 			const bx = gx + (groupW - 2 * bw - 10) / 2 + k * (bw + 10);
 			if (!Number.isFinite(v)) {
-				out.push(`<text x="${bx + bw / 2}" y="${baseY - 8}" fill="${C.muted}" font-size="16" text-anchor="middle">n/a</text>`);
+				out.push(`<text x="${bx + bw / 2}" y="${baseY - 10}" fill="${C.muted}" font-size="16" text-anchor="middle">${s ? (p.missing ?? "n/a") : "n/a"}</text>`);
 				return;
 			}
-			const h = Math.max(2, (v / max) * barMaxH);
+			const h = Math.max(3, (v / max) * barMaxH);
 			out.push(`<rect x="${bx}" y="${baseY - h}" width="${bw}" height="${h}" rx="4" fill="${a.color}"/>`);
 			out.push(`<text x="${bx + bw / 2}" y="${baseY - h - 10}" fill="${C.ink}" font-size="18" font-weight="600" text-anchor="middle">${esc(p.fmt(v, s))}</text>`);
 		});
