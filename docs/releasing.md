@@ -73,8 +73,9 @@ The publish gate refuses a commit no passing candidate covers. `main` moves ever
 
 ```bash
 # either: a release branch at the commit (no local clone needed)
-gh api repos/flisk-sh/flisk/git/refs -f ref=refs/heads/release/<version> -f sha=<commit>
-gh workflow run release-candidate.yml --ref release/<version>
+# a fresh branch per attempt: a retry after a fix on main needs a new name (release/<version>-rc2, ...)
+gh api repos/flisk-sh/flisk/git/refs -f ref=refs/heads/release/<version>-rc<n> -f sha=<commit>
+gh workflow run release-candidate.yml --ref release/<version>-rc<n>
 # or: an rc tag at the commit
 git tag rc-<version> <commit> && git push origin refs/tags/rc-<version>
 
@@ -102,6 +103,8 @@ gh workflow run release-binaries.yml --ref main
 Dispatch on `main` only when `main` is still at the candidate's commit, or no release input changed since (the gate above). Watch the run. `build`, `windows-binary` and `publish` must be green; `publish-unscoped-npm` may be red until the [unscoped package](#unscoped-npm-package-flisk) exists (it does not block the others). Publication happens inside `publish`: by the time it finishes, npm and `flisk-sh/releases` are live even if later steps failed.
 
 ### 4. Merge the version-bump PR
+
+Only when the run bumped the version (`build` printed `<old> is already released; releasing this commit as <version>`). When `main` already carried the version there is no bump PR: the publish job tagged the commit and published the release itself (pipeline step 6), so skip to [verify](#verify-a-release).
 
 The publish job opens `Release <version> (automatic version bump)` from `release/bump-<version>`. `main` requires checks and approvals, so:
 

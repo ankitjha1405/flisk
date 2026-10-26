@@ -46,16 +46,16 @@ Do not reuse an older `release/*` branch. Fixes land on `main` daily, and a cand
 ## 3. Run the release candidate
 
 ```bash
-SHA=<commit>; V=<next version, e.g. 1.4.6>
-gh api repos/flisk-sh/flisk/git/refs -f ref=refs/heads/release/$V -f sha=$SHA
-gh workflow run release-candidate.yml -R flisk-sh/flisk --ref release/$V
+SHA=<commit>; V=<next version, e.g. 1.4.6>; N=1   # N: attempt number, new for every retry on a new commit
+gh api repos/flisk-sh/flisk/git/refs -f ref=refs/heads/release/$V-rc$N -f sha=$SHA
+gh workflow run release-candidate.yml -R flisk-sh/flisk --ref release/$V-rc$N
 gh run watch <run-id> -R flisk-sh/flisk --exit-status
 ```
 
 Never dispatch the candidate on `main`: its `package` job refuses `refs/heads/main`. If the run fails:
 - Read the failing case first. Look up its message in the troubleshooting table.
 - Retry only when every failure is the same infrastructure readiness timeout. Say so explicitly.
-- A real failure is a bug. Fix it on `main` through a PR, then cut a new branch from `main`. Never weaken or skip the gate.
+- A real failure is a bug. Fix it on `main` through a PR, then cut a new branch from `main` with the next `N` (the old ref already exists, and moving it would rewrite what an earlier run tested). Never weaken or skip the gate.
 
 ## 4. Dispatch the release
 
@@ -94,8 +94,15 @@ Expected:
 GitHub Packages: `docs/github-packages.md#maintainer-release-checks`.
 
 Repairs, all without a new release:
-- **Draft or tag missing on `flisk-sh/flisk`:** `gh api repos/flisk-sh/flisk/git/refs -f ref=refs/tags/v$V -f sha=<released commit>`, then `gh release edit v$V -R flisk-sh/flisk --tag v$V --draft=false --latest=false`. The released commit is the run's `headSha`.
-- **Signature missing:** `gh workflow run sign-release.yml -f version=$V`.
+- **Draft or tag missing on `flisk-sh/flisk`:** check each piece, then create only what is missing.
+  1. Pick the tag target. The tag must point at a commit whose `package.json` says `$V`:
+     - the run bumped the version: the merged bump commit (`Release $V (automatic version bump)` on `main`);
+     - no bump: the run's `headSha`.
+     Confirm with `gh api "repos/flisk-sh/flisk/contents/package.json?ref=<commit>" --jq .content | base64 -d | grep '"version"'`.
+  2. Tag, only if `gh api repos/flisk-sh/flisk/git/refs/tags/v$V` returns 404: `gh api repos/flisk-sh/flisk/git/refs -f ref=refs/tags/v$V -f sha=<commit>`.
+  3. Release: if `gh release view v$V -R flisk-sh/flisk` fails, there is none. Create an empty draft (`gh release create v$V -R flisk-sh/flisk --draft --latest=false --title v$V --notes "Signed checksums for flisk $V."`) and run `sign-release.yml` (next item).
+  4. Publish only once the draft has `checksums.txt` and `checksums.txt.sigstore.json`: `gh release edit v$V -R flisk-sh/flisk --tag v$V --draft=false --latest=false`. Never publish an unsigned release.
+- **Signature missing:** `gh workflow run sign-release.yml -f version=$V`. It attaches `checksums.txt` and its signature to both releases.
 - **GitHub Packages missing:** `gh workflow run publish-existing-npm-to-github-packages.yml -f version=$V`.
 - **Unscoped `flisk` 404 on npm:** the package has never been created. An npm owner must claim it and add the trusted publisher (`docs/releasing.md#unscoped-npm-package-flisk`). Report it; you cannot fix it from CI.
 
