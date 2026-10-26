@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Flisk Landscape contributors
 // SPDX-License-Identifier: MIT
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { connect } from "node:net";
 import { join } from "node:path";
 import chalk from "chalk";
@@ -8,7 +8,7 @@ import { Command } from "commander";
 import { ensureProjectRuntimeAssets, generateMasterConfigs, ProjectConfigNotFoundError, verifyMasterConfigs, } from "../generator/template-engine.js";
 import { DEVCONTAINER_DOCKER_FIX, detectHost, isContainerHost, WEBCONTAINER_UP_MESSAGE, } from "../utils/agent-host.js";
 import { handleDryRun } from "../utils/command-helpers.js";
-import { SERVICE_JSON, STANDARD_PORTS } from "../utils/constants.js";
+import { STANDARD_PORTS } from "../utils/constants.js";
 import { getDeferredResourceNames, summarizeTiltBuildError } from "../utils/doctor-runtime.js";
 import { applyEnvFileSelection, assertEngineSupportsEnvFile, EnvFileError, envFileWarning, PROJECT_ENV_FILE_VAR, selectEnvFile, } from "../utils/env-selection.js";
 import { completeEnvFile } from "../utils/env-validator.js";
@@ -20,6 +20,7 @@ import { exportHostPortPlan, getHostPortPlan, writeSavedHostPortPlan, } from "..
 import { formatHostPortPlan } from "../utils/host-port-plan.js";
 import { createJsonEmitter } from "../utils/json-output.js";
 import { toMachineError } from "../utils/machine-output.js";
+import { hasNearbyServiceJson } from "../utils/native-project.js";
 import { formatMixedRuntimeRefusal, isNativeProject, isNativeService, resolveRuntimeMode, } from "../utils/native-service.js";
 import { runNativeUp } from "../utils/native-up.js";
 import { nativeWindowsStackRefusal } from "../utils/native-windows.js";
@@ -236,22 +237,6 @@ function envFileFailure(error) {
         },
         exitCode: error instanceof FliskError ? error.exitCode : 2,
     };
-}
-/** True when `dir` or a directory up to two levels below it has a service.json; a cheap test before a full discovery scan. */
-function hasNearbyServiceJson(dir, depth = 0) {
-    if (existsSync(join(dir, SERVICE_JSON)))
-        return true;
-    if (depth >= 2)
-        return false;
-    try {
-        return readdirSync(dir, { withFileTypes: true }).some((entry) => entry.isDirectory() &&
-            !entry.name.startsWith(".") &&
-            entry.name !== "node_modules" &&
-            hasNearbyServiceJson(join(dir, entry.name), depth + 1));
-    }
-    catch {
-        return false;
-    }
 }
 /**
  * Decides whether `flisk up` runs the selection as local processes (#2229). Returns null for today's Docker + Tilt path, which

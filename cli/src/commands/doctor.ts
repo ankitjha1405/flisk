@@ -8,7 +8,7 @@ import chalk from "chalk";
 import { Command } from "commander";
 import { hasVerdaccioLicense } from "../generator/extension-fetch.js";
 import { readProjectConfig } from "../generator/template-engine.js";
-import type { CheckResult, DiscoveredResource } from "../types/index.js";
+import type { CheckResult } from "../types/index.js";
 import {
   DEVCONTAINER_DOCKER_FIX,
   detectHost,
@@ -79,7 +79,7 @@ import { evaluateFliskVersionFloor } from "../utils/flisk-version.js";
 import { formatCount } from "../utils/formatting.js";
 import { getHostPortPlan, resolveRuntimeIngressPort } from "../utils/host-port-config.js";
 import { createHostPortPlan, type HostPortPlan } from "../utils/host-port-plan.js";
-import { isNativeProject } from "../utils/native-service.js";
+import { findNativeProject } from "../utils/native-project.js";
 import { findProjectRoot, getPackageVersion } from "../utils/paths.js";
 import { promptConfirm } from "../utils/prompt.js";
 import {
@@ -1524,16 +1524,6 @@ export function renderDoctorOutput(
   }
 }
 
-/** The project's services when every one declares `command` (a project of local processes), else null. */
-function nativeProjectResources(projectRoot: string): DiscoveredResource[] | null {
-  try {
-    const resources = discoverResourcesFromRoot(projectRoot);
-    return isNativeProject(resources) ? resources : null;
-  } catch {
-    return null;
-  }
-}
-
 export const doctorCommand = new Command("doctor")
   .description("Check environment readiness for Flisk")
   .option("--all", "Run every check and show Machine and Project sections with a summary", false)
@@ -1594,8 +1584,8 @@ export const doctorCommand = new Command("doctor")
     }
 
     // A project whose services all declare `command` runs as local processes: doctor checks only what they need (#2231).
-    const nativeRoot = findProjectRoot();
-    const nativeResources = nativeRoot ? nativeProjectResources(nativeRoot) : null;
+    const nativeProject = findNativeProject();
+    const nativeResources = nativeProject?.resources ?? null;
     if (!options.json) {
       console.log(
         nativeResources
@@ -1669,7 +1659,8 @@ export const doctorCommand = new Command("doctor")
       console.log("Checking environment...\n");
     }
 
-    const projectRoot = findProjectRoot();
+    // A directory of command services is a project for doctor even before `flisk up` writes its .flisk/project.json.
+    const projectRoot = findProjectRoot() ?? nativeProject?.projectRoot ?? null;
 
     // Repairs run before the checks so the checks report the state after the fix.
     let fixActions: DoctorAction[] | undefined;

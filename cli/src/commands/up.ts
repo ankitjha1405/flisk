@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Flisk Landscape contributors
 // SPDX-License-Identifier: MIT
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { connect } from "node:net";
 import { join } from "node:path";
 import chalk from "chalk";
@@ -19,7 +19,7 @@ import {
   WEBCONTAINER_UP_MESSAGE,
 } from "../utils/agent-host.js";
 import { handleDryRun } from "../utils/command-helpers.js";
-import { SERVICE_JSON, STANDARD_PORTS } from "../utils/constants.js";
+import { STANDARD_PORTS } from "../utils/constants.js";
 import { getDeferredResourceNames, summarizeTiltBuildError } from "../utils/doctor-runtime.js";
 import {
   applyEnvFileSelection,
@@ -53,6 +53,7 @@ import {
 import { formatHostPortPlan } from "../utils/host-port-plan.js";
 import { createJsonEmitter, type JsonError } from "../utils/json-output.js";
 import { toMachineError } from "../utils/machine-output.js";
+import { hasNearbyServiceJson } from "../utils/native-project.js";
 import {
   formatMixedRuntimeRefusal,
   isNativeProject,
@@ -346,23 +347,6 @@ function envFileFailure(error: unknown): { failure: JsonError; exitCode: number 
     },
     exitCode: error instanceof FliskError ? error.exitCode : 2,
   };
-}
-
-/** True when `dir` or a directory up to two levels below it has a service.json; a cheap test before a full discovery scan. */
-function hasNearbyServiceJson(dir: string, depth = 0): boolean {
-  if (existsSync(join(dir, SERVICE_JSON))) return true;
-  if (depth >= 2) return false;
-  try {
-    return readdirSync(dir, { withFileTypes: true }).some(
-      (entry) =>
-        entry.isDirectory() &&
-        !entry.name.startsWith(".") &&
-        entry.name !== "node_modules" &&
-        hasNearbyServiceJson(join(dir, entry.name), depth + 1),
-    );
-  } catch {
-    return false;
-  }
 }
 
 /** A selection `flisk up` runs as local processes. */

@@ -128,6 +128,11 @@ describe("flisk up with local processes (no Docker, no Tilt)", () => {
     // The website reads the API port from ${API_PORT} in its env, which the shell provides here.
     const env = { ...machine.env, API_PORT: String(apiPort) };
 
+    // Before the first `flisk up` there is no .flisk/project.json; doctor already checks only what the services need.
+    const firstDoctor = runFlisk(["doctor", "--json", "--no-ping"], { cwd: dir, env });
+    expect(parseEnvelope(firstDoctor.stdout).data).toMatchObject({ ready: true, inProject: true });
+    expect(existsSync(join(dir, ".flisk"))).toBe(false);
+
     const { child, line } = await startUp(dir, env);
     const up = parseEnvelope(line);
     expect(up.errors).toEqual([]);
