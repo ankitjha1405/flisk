@@ -110,6 +110,16 @@ export function buildAdvertisedTargets(
   return routableTargets(resources, ingressPort, (path) => path);
 }
 
+/**
+ * The Traefik URL (not the Tilt UI port) to show for one service in the `flisk up` summary, or undefined when the service has no route.
+ */
+export function advertisedServiceUrl(
+  resource: DiscoveredResource,
+  ingressPort?: number,
+): string | undefined {
+  return buildAdvertisedTargets([resource], ingressPort)[0]?.url;
+}
+
 function routableTargets(
   resources: DiscoveredResource[],
   ingressPort: number | undefined,

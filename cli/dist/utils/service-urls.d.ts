@@ -32,5 +32,9 @@ export declare function buildHealthTargets(resources: DiscoveredResource[], ingr
  * this URL is a 404 (nothing handles the bare path), which is the dead link users click.
  */
 export declare function buildAdvertisedTargets(resources: DiscoveredResource[], ingressPort?: number): HealthTarget[];
+/**
+ * The Traefik URL (not the Tilt UI port) to show for one service in the `flisk up` summary, or undefined when the service has no route.
+ */
+export declare function advertisedServiceUrl(resource: DiscoveredResource, ingressPort?: number): string | undefined;
 export declare function pingHealthTarget(target: HealthTarget, timeoutMs: number): Promise<HealthProbe>;
 export declare function pingHealthTargets(targets: HealthTarget[], timeoutMs: number): Promise<HealthProbe[]>;

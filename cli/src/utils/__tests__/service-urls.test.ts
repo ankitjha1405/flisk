@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTempProject, makeResource } from "../../test-support/index.js";
 import {
+  advertisedServiceUrl,
   appendHealthPath,
   buildAdvertisedTargets,
   buildHealthTargets,
@@ -366,5 +367,40 @@ describe("pingHealthTargets", () => {
 
   it("returns no probes for no targets", async () => {
     await expect(pingHealthTargets([], 100)).resolves.toEqual([]);
+  });
+});
+
+describe("advertisedServiceUrl", () => {
+  const original = process.env.FLISK_SERVICE_BASE_URL;
+
+  beforeEach(() => {
+    process.env.FLISK_SERVICE_BASE_URL = "http://demo.localhost";
+  });
+
+  afterEach(() => {
+    if (original === undefined) {
+      delete process.env.FLISK_SERVICE_BASE_URL;
+    } else {
+      process.env.FLISK_SERVICE_BASE_URL = original;
+    }
+  });
+
+  it("points a frontend at the ingress host, not the Tilt UI port", () => {
+    expect(
+      advertisedServiceUrl(
+        makeResource("storefront", "frontend", { basePath: "/storefront" }),
+        8080,
+      ),
+    ).toBe("http://app.demo.localhost:8080/storefront");
+  });
+
+  it("points a backend at the api host", () => {
+    expect(advertisedServiceUrl(makeResource("orders-api", "backend"), 8080)).toBe(
+      "http://api.demo.localhost:8080/api/orders",
+    );
+  });
+
+  it("has no URL for a service without a route", () => {
+    expect(advertisedServiceUrl(makeResource("kitchen-worker", "worker"))).toBeUndefined();
   });
 });

@@ -79,6 +79,12 @@ export function buildHealthTargets(resources, ingressPort) {
 export function buildAdvertisedTargets(resources, ingressPort) {
     return routableTargets(resources, ingressPort, (path) => path);
 }
+/**
+ * The Traefik URL (not the Tilt UI port) to show for one service in the `flisk up` summary, or undefined when the service has no route.
+ */
+export function advertisedServiceUrl(resource, ingressPort) {
+    return buildAdvertisedTargets([resource], ingressPort)[0]?.url;
+}
 function routableTargets(resources, ingressPort, toPath) {
     const { appBase, apiBase } = resolveSubdomainBases(ingressPort);
     return resources
