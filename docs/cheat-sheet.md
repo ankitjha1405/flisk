@@ -123,8 +123,9 @@ flisk project saas --path my-app       # clone into my-app/
 | `--force` | Overwrite existing configuration ⚠️ destructive |
 | `--yes` | Non-interactive, use defaults |
 | `--config-file <path>` | Load project config from an existing JSON file |
+| `--no-agent-skills` | Do not write the Flisk agent skills (`.claude/skills`, `.agents/skills`) and `AGENTS.md` |
 
-Creates `TILT_RESOURCE_DEFAULTS.star` and `TILT_TECH_STACK.star`, among others. See [configuration](configuration.md) and [the tech stack guide](tech-stack-lock.md).
+Creates `TILT_RESOURCE_DEFAULTS.star` and `TILT_TECH_STACK.star`, among others. A new project also gets the Flisk agent skills in `.claude/skills` and `.agents/skills` and a short `AGENTS.md`, so a coding agent opened there knows how to build and run the app; files that already exist are left as they are. See [configuration](configuration.md) and [the tech stack guide](tech-stack-lock.md).
 
 Project setup does not need a running Docker daemon or an installed Tilt: `flisk project` writes the project configuration and clones the template, then prints what to start before `flisk up`. `flisk up` still refuses to start without the local runtime.
 
@@ -301,6 +302,7 @@ flisk up --json &                # one JSON object when ready; Tilt keeps runnin
 | `--stacks` | Stack information (the default) |
 | `--resources` | All discovered resources |
 | `--tilt` | Tilt resource status |
+| `--unhealthy` | Only failing or pending services (says so when all are healthy) |
 | `-v`, `--verbose` | More detail |
 | `--json` | Versioned JSON report |
 
@@ -317,6 +319,7 @@ flisk logs --since 5m --json
 | Flag | Effect |
 | --- | --- |
 | `-s`, `--service <names...>` | Only these services (Tilt resource names) |
+| `--unhealthy` | Only services that are failing or still starting |
 | `--tail <n>` | Most recent lines (default 200) |
 | `--since <duration>` | Only logs newer than this, for example `30s`, `5m`, `1h` |
 | `--port <n>` | Tilt UI port (default `TILT_PORT` or 10350) |
