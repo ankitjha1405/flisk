@@ -6,7 +6,9 @@
 // (cli/, runtime/, docs/, scripts/, ...): that one must exist. The old top-level engine/, discovery/, specs/ and ext/
 // moved under runtime/ (#2060), so such a path whose runtime/ twin exists is stale too; inside a vendored project
 // they are still real names, so a path that only goes one level deep is left alone. Paths in fenced code, globs and
-// placeholders are not read. Gate at zero.
+// placeholders are not read. A path git ignores (cli/test-results/, cli/coverage/: output a local run creates) exists
+// in some checkouts and not others, so it is not checked: the result must not depend on what ran before. Gate at zero.
+import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { has, read, walk } from "./lib.mjs";
 
@@ -55,18 +57,38 @@ export function staleReason(root, roots, p) {
 	return null;
 }
 
+// The paths .gitignore ignores, of the ones given. git exits 1 when none is ignored; outside a checkout (a test
+// fixture) it fails, and then none is.
+export function gitIgnored(root, paths) {
+	if (!paths.length) return new Set();
+	const lines = (text) => new Set(String(text ?? "").split("\n").filter(Boolean));
+	try {
+		return lines(
+			execFileSync("git", ["check-ignore", "--stdin"], {
+				cwd: root,
+				input: paths.join("\n"),
+				encoding: "utf8",
+				stdio: ["pipe", "pipe", "ignore"],
+			}),
+		);
+	} catch (error) {
+		return lines(error.stdout);
+	}
+}
+
 export function measure({ root }) {
 	const roots = new Set(readdirSync(root).filter((n) => n !== ".git" && n !== "node_modules"));
 	const files = walk(root, ".", isGuidance);
+	const mentions = files.flatMap((rel) => backtickedPaths(read(root, rel)).map((m) => ({ rel, ...m })));
+	const ignored = gitIgnored(root, [...new Set(mentions.map((m) => m.path))]);
 	const findings = [];
 	let checked = 0;
-	for (const rel of files) {
-		for (const { line, path: p } of backtickedPaths(read(root, rel))) {
-			const why = staleReason(root, roots, p);
-			if (why === null && !roots.has(p.split("/")[0])) continue;
-			checked++;
-			if (why) findings.push(`${rel}:${line} \`${p}\`: ${why}`);
-		}
+	for (const { rel, line, path: p } of mentions) {
+		if (ignored.has(p)) continue;
+		const why = staleReason(root, roots, p);
+		if (why === null && !roots.has(p.split("/")[0])) continue;
+		checked++;
+		if (why) findings.push(`${rel}:${line} \`${p}\`: ${why}`);
 	}
 	return {
 		value: findings.length,
