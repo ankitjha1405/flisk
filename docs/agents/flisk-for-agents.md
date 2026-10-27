@@ -56,6 +56,21 @@ With the skills, the agent's plan is: `doctor`, scaffold the services, `up`, the
 
 For Cursor, run `flisk connect cursor` and open the folder in Cursor. For Codex, run `flisk connect codex` and start `codex` in the folder; Codex loads a project `.codex/config.toml` only for trusted projects.
 
+## Prompts to try
+
+No project yet? Run `flisk connect claude` (or `cursor`, `codex`) in an empty folder and paste these in order. Each line names the tools the agent is expected to call.
+
+| You want to | Ask the agent | Tools |
+| --- | --- | --- |
+| Check the machine is ready | "Run Flisk doctor and tell me what's missing." | `doctor` |
+| Get a working stack from nothing | "Create a Flisk agent-stack project here, start it, and show me the URLs once everything is healthy." | `project_init` (`template: "agent-stack"`), `up`, `status` |
+| Add services | "Add a backend called `api` and a worker called `jobs`, then start the stack again." | `resource_create`, `up` |
+| Find and fix a failure | "Something in my stack is red. Find which service, read its logs, and fix it." | `status`, `logs`, `config_verify`, `resource_restart` |
+| See what is running | "List this project's services, stacks and URLs." | `resource_list`, `stack_list`, `project_info` |
+| Stop | "Stop the stack." | `down` |
+
+In a repository that already has several services (a frontend, an API, a database, a worker), the day-to-day use is the same loop without the setup: "start it", "why is `api` failing", "add a Redis". The agent reads the running stack through the tools instead of guessing at Docker. For one-tool requests, see [Ask in outcomes](../agent-tooling/flisk-mcp-setup.md#5-ask-in-outcomes).
+
 ## What it is not
 
 - Not a hosted service: `flisk mcp` is a local process your agent starts over stdio. Nothing listens on a port and there is no account.
