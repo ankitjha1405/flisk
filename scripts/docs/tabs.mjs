@@ -46,6 +46,8 @@ export const ICONS = {
   laptop: '<rect x="2.75" y="2.75" width="10.5" height="7.75" rx="1.25"/><path d="M1 13.25h14"/>',
   server:
     '<rect x="1.75" y="2" width="12.5" height="5" rx="1.25"/><rect x="1.75" y="9" width="12.5" height="5" rx="1.25"/><path d="M4.5 4.5h.01M4.5 11.5h.01"/>',
+  cloud: '<path d="M4.5 12.75h7.25a3 3 0 0 0 .35-5.98 4.25 4.25 0 0 0-8.2.43A2.8 2.8 0 0 0 4.5 12.75Z"/>',
+  link: '<path d="M6.75 9.25 9.25 6.75M7.25 4.5l1-1a2.47 2.47 0 0 1 3.5 3.5l-1 1M8.75 11.5l-1 1a2.47 2.47 0 0 1-3.5-3.5l1-1"/>',
   tiles:
     '<rect x="1.75" y="2.25" width="6.5" height="11.5" rx="1.25"/><rect x="9.75" y="2.25" width="4.5" height="5" rx="1.25"/><rect x="9.75" y="8.75" width="4.5" height="5" rx="1.25"/>',
   window: '<rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2"/><path d="M1.75 6h12.5M4.25 4.4h.01M6 4.4h.01"/>',
