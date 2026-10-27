@@ -88,6 +88,10 @@ jobs:
                 people.set(pr.author.login, p);
               }
               if (!page.pageInfo.hasNextPage) break;
+              // A cursor that does not move would refetch the same page until the job times out.
+              if (!page.pageInfo.endCursor || page.pageInfo.endCursor === after) {
+                throw new Error(`Pagination cursor did not advance (after=${after}).`);
+              }
               after = page.pageInfo.endCursor;
             }
 
