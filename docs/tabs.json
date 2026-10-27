@@ -120,7 +120,8 @@
           "icon": "sparkle",
           "title": "Flisk vs LangGraph and Mastra"
         }
-      ]
+      ],
+      "panel": false
     },
     {
       "id": "start",
