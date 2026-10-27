@@ -23,12 +23,20 @@ export const meta = {
 };
 
 // The top-level directories a run: script can name. Anything else (a URL, $RUNNER_TEMP, a fixture checkout) is not ours.
-const REPO_DIRS = [".github", "scripts", "tests", "cli", "runtime", "docs", "examples", "services", "packages"];
-const pathPattern = (prefix) =>
-	new RegExp(
-		`(?:^|[\\s"'=(:])${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}((?:${REPO_DIRS.map((d) => d.replace(".", "\\.")).join("|")})/[\\w./-]*[\\w-])`,
-		"g",
-	);
+const REPO_DIRS = new Set([
+	".github",
+	"scripts",
+	"tests",
+	"cli",
+	"runtime",
+	"docs",
+	"examples",
+	"services",
+	"packages",
+]);
+// A path-like word (one with a "/") after a space, a quote, "=", "(" or ":". The prefix and the top-level directory are
+// checked in code, not built into a RegExp from a variable (Semgrep detect-non-literal-regexp).
+const PATH_TOKEN = /(?:^|[\s"'=(:])([\w.-]+\/[\w./-]*[\w-])/g;
 
 // Shell comments dropped so prose such as "# see tests/e2e/lib" is not read as a path the job runs.
 const code = (script) =>
@@ -40,7 +48,13 @@ const code = (script) =>
 // Repository paths one run: script names, relative to a checkout at `prefix` ("" for the workspace root).
 export function scriptPaths(script, prefix = "") {
 	const lead = prefix ? `${prefix.replace(/\/$/, "")}/` : "";
-	return [...code(script).matchAll(pathPattern(lead))].map((m) => m[1].replace(/\/$/, ""));
+	const out = [];
+	for (const m of code(script).matchAll(PATH_TOKEN)) {
+		if (!m[1].startsWith(lead)) continue;
+		const rel = m[1].slice(lead.length);
+		if (REPO_DIRS.has(rel.split("/")[0])) out.push(rel);
+	}
+	return out;
 }
 
 export const covered = (rel, patterns) =>
