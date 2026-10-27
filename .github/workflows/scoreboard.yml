@@ -87,8 +87,8 @@ jobs:
           ./node_modules/.bin/stryker run
           --inPlace
           --plugins ./node_modules/@stryker-mutator/vitest-runner/dist/src/index.js
-          --logLevel debug
           --testRunner vitest
+          --vitest.configFile vitest.stryker.config.ts
           --coverageAnalysis perTest
           --mutate src/generator/template-engine.ts,src/generator/resource-templates.ts
           --reporters json,clear-text
