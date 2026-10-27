@@ -80,10 +80,13 @@ jobs:
       # --inPlace mutates this throwaway checkout instead of a sandbox copy. A sandbox makes Stryker rewrite
       # tsconfig.json with the TypeScript compiler API, which TypeScript 7 in cli/ does not have
       # (ts.parseConfigFileTextToJson is not a function); cli/tsconfig.json has no extends or references to rewrite.
+      # --plugins names the runner's file: the default "@stryker-mutator/*" glob only looks beside Stryker's own
+      # package, which bun's isolated node_modules/.bun layout keeps apart from the vitest runner.
       - name: Stryker on the generators
         run: >-
           ./node_modules/.bin/stryker run
           --inPlace
+          --plugins ./node_modules/@stryker-mutator/vitest-runner/dist/src/index.js
           --testRunner vitest
           --coverageAnalysis perTest
           --mutate src/generator/template-engine.ts,src/generator/resource-templates.ts
