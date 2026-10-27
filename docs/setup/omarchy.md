@@ -40,7 +40,7 @@ flisk doctor
 `flisk doctor` checks only what your project uses and prints a fix for anything missing. No Node.js? [Install the prebuilt binary](../install/binary.md) instead.
 
 </td></tr>
-<tr><td><img src="../assets/tabs/setup/omarchy-bottom.bacb765e.svg" alt="~/my-shop ❯ flisk up · Omarchy · Arch Linux + Hyprland" width="100%" align="top"></td></tr>
+<tr><td><img src="../assets/tabs/setup/omarchy-bottom.8c0e0729.svg" alt="~/my-shop ❯ flisk up · Omarchy · Arch Linux + Hyprland" width="100%" align="top"></td></tr>
 </table>
 <!-- /tabs:setup -->
 

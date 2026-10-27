@@ -41,7 +41,8 @@ function svg(height, label, body, style = "") {
 
 // Text that types itself, as in scripts/demo-svgs.mjs: a cover in the background color slides right one character per step,
 // with the caret on its left edge, then holds the full line. Its resting place (no animation) is past the text, so a static
-// render shows the whole line. textLength pins the text to the width the cover moves, whatever font the reader has.
+// render shows the whole line. textLength pins the text to the width the cover moves, whatever font the reader has, and
+// xml:space="preserve" keeps the spaces in "> " and " flisk up", which SVG would otherwise trim.
 function typed({ x, y, value, size = 13, font = MONO, fill, bg, weight = 400, period = 10, from = 6, to = 50 }) {
   const chars = [...value].length;
   const width = font === MONO ? Math.ceil(chars * size * MONO_ADVANCE) : textWidth(value, size, weight);
@@ -53,7 +54,7 @@ function typed({ x, y, value, size = 13, font = MONO, fill, bg, weight = 400, pe
           .ty{transform:${done};animation:ty ${period}s linear infinite}
           .caret{animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}`,
     body: [
-      `<text x="${x}" y="${y}" font-family="${font}" font-size="${size}"${weight !== 400 ? ` font-weight="${weight}"` : ""} fill="${fill}" textLength="${width}" lengthAdjust="spacingAndGlyphs">${esc(value)}</text>`,
+      `<text x="${x}" y="${y}" xml:space="preserve" font-family="${font}" font-size="${size}"${weight !== 400 ? ` font-weight="${weight}"` : ""} fill="${fill}" textLength="${width}" lengthAdjust="spacingAndGlyphs">${esc(value)}</text>`,
       `<clipPath id="tyc"><rect x="${x - 1}" y="${top}" width="${width + 9}" height="${h}"/></clipPath>`,
       `<g clip-path="url(#tyc)"><g class="ty"><rect x="${x}" y="${top}" width="${width + 9}" height="${h}" fill="${bg}"/><rect class="caret" x="${x}" y="${top + 1}" width="7" height="${h - 2}" fill="${fill}" opacity="0.85"/></g></g>`,
     ].join(""),
@@ -63,7 +64,7 @@ function typed({ x, y, value, size = 13, font = MONO, fill, bg, weight = 400, pe
 // A fixed-width prefix (a shell prompt) followed by typed text; the prefix is pinned to whole monospace cells.
 function prompted({ x, y, prefix, value, size = 13, bg, fill, ...rest }) {
   const cell = size * MONO_ADVANCE;
-  const before = `<text x="${x}" y="${y}" font-family="${MONO}" font-size="${size}" textLength="${Math.round([...prefix.map((p) => p.text).join("")].length * cell)}" lengthAdjust="spacingAndGlyphs">${prefix
+  const before = `<text x="${x}" y="${y}" xml:space="preserve" font-family="${MONO}" font-size="${size}" textLength="${Math.round([...prefix.map((p) => p.text).join("")].length * cell)}" lengthAdjust="spacingAndGlyphs">${prefix
     .map((p) => `<tspan fill="${p.fill}"${p.bold ? ' font-weight="700"' : ""}>${esc(p.text)}</tspan>`)
     .join("")}</text>`;
   const start = x + Math.round([...prefix.map((p) => p.text).join("")].length * cell);
