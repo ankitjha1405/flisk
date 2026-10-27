@@ -121,8 +121,15 @@ export function descriptionProblems(tools) {
 
 // Whether a doc names a tool. A snake_case name is distinctive; a one-word name (up, status, logs) must sit in
 // backticks, or the sentence "the logs" would count.
-const mentions = (text, name) =>
-	name.includes("_") ? new RegExp(`(?<![\\w-])${name}(?![\\w-])`).test(text) : text.includes(`\`${name}\``);
+// Plain string search with a word-boundary check, not a RegExp built from the name (Semgrep's non-literal-regexp rule).
+const mentions = (text, name) => {
+	if (!name.includes("_")) return text.includes(`\`${name}\``);
+	const wordChar = /[\w-]/;
+	for (let at = text.indexOf(name); at !== -1; at = text.indexOf(name, at + 1)) {
+		if (!wordChar.test(text[at - 1] ?? " ") && !wordChar.test(text[at + name.length] ?? " ")) return true;
+	}
+	return false;
+};
 
 // Docs to scan for tool lists and for counts: the READMEs and AGENTS.md, docs/ (markdown and the agent contracts),
 // the skills this repo authors (synced ones are fixed in flisk-skills) and cli/templates/.
@@ -194,17 +201,18 @@ export function numberOf(text) {
 export function countTable({ tools, commands, skills, scorers, translations, resourceTypes }) {
 	const mcpLine = (line, rel) => /\bMCP\b|exposes/i.test(line) || /(^|\/)(agent-tooling|mcp)[./]/.test(rel);
 	return [
-		{ noun: "tools", pattern: "(?:MCP |Flisk |Flisk MCP )?tools", good: [tools], when: mcpLine },
-		{ noun: "commands", pattern: "(?:CLI|top-level|CLI top-level) commands", good: commands },
-		{ noun: "skills", pattern: "(?:agent |Flisk |Flisk agent )?skills", good: skills },
-		{ noun: "scorers", pattern: "scorers", good: [scorers] },
-		{ noun: "translations", pattern: "(?:README )?translations", good: translations },
-		{ noun: "languages", pattern: "languages", good: translations, when: (line) => /README|translat/i.test(line) },
-		{ noun: "resource types", pattern: "resource types", good: resourceTypes },
+		{ noun: "tools", after: /^((?:MCP |Flisk |Flisk MCP )?tools)\b/i, good: [tools], when: mcpLine },
+		{ noun: "commands", after: /^((?:CLI|top-level|CLI top-level) commands)\b/i, good: commands },
+		{ noun: "skills", after: /^((?:agent |Flisk |Flisk agent )?skills)\b/i, good: skills },
+		{ noun: "scorers", after: /^(scorers)\b/i, good: [scorers] },
+		{ noun: "translations", after: /^((?:README )?translations)\b/i, good: translations },
+		{ noun: "languages", after: /^(languages)\b/i, good: translations, when: (line) => /README|translat/i.test(line) },
+		{ noun: "resource types", after: /^(resource types)\b/i, good: resourceTypes },
 	];
 }
 
-const NUMBER = "(?:\\d+|(?:twenty|thirty|forty|fifty)(?:-(?:one|two|three|four|five|six|seven|eight|nine))?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)";
+// A count word or number followed by a space or hyphen; the noun after it is matched by each row's `after` literal.
+const NUMBER_AT = /(?<![\w.])(\d+|(?:twenty|thirty|forty|fifty)(?:-(?:one|two|three|four|five|six|seven|eight|nine))?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)(?:\s|-)/gi;
 // "up to 3 skills", "at least 5", "more than 10", "the first 3", "per 2 commands" state a bound or a part, not a total.
 const BOUND = /(?:\bup to|\bat least|\bat most|\bmore than|\bfewer than|\bless than|\bfirst|\blast|\btop|\bper|\bonly|[~>≥≤+-])\s*$/i;
 
@@ -219,11 +227,13 @@ export function countFindings(root, files, table) {
 			if (fenced.has(i + 1)) return;
 			for (const row of table) {
 				if (row.when && !row.when(line, rel)) continue;
-				for (const m of line.matchAll(new RegExp(`(?<![\\w.])(${NUMBER})(?:\\s|-)(${row.pattern})\\b`, "gi"))) {
+				for (const m of line.matchAll(NUMBER_AT)) {
+					const noun = row.after.exec(line.slice(m.index + m[0].length));
+					if (!noun) continue;
 					if (BOUND.test(line.slice(0, m.index))) continue;
 					const n = numberOf(m[1]);
 					if (n !== null && !row.good.includes(n))
-						out.push(`${rel}:${i + 1}: says "${m[1]} ${m[2]}"; the repo has ${[...new Set(row.good)].join(" or ")}`);
+						out.push(`${rel}:${i + 1}: says "${m[1]} ${noun[1]}"; the repo has ${[...new Set(row.good)].join(" or ")}`);
 				}
 			}
 		});
