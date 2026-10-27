@@ -3,7 +3,7 @@
 [← Back to the README](../../README.md#pick-your-agent)
 
 <table>
-<tr><td><a href="claude-code.md"><img src="../assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="44"></a><a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="../assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td><a href="claude-code.md"><img src="../assets/agents/tabs/claude-code-selected.svg" alt="Claude Code (selected)" height="44"></a><a href="codex.md"><img src="../assets/agents/tabs/codex.svg" alt="Codex" height="44"></a><a href="cursor.md"><img src="../assets/agents/tabs/cursor.svg" alt="Cursor" height="44"></a><img src="../assets/agents/tabs/rest.svg" alt="" height="44"></td></tr>
 <tr><td>
 
 **1. Install Claude Code and Flisk**
