@@ -166,7 +166,7 @@ const FRAMES = {
         ],
       ),
     bottom: (f) => {
-      const [user, rest] = f.left.split(":");
+      const [user, rest = ""] = f.left.split(":");
       return svg(
         32 + LAPTOP_BOTTOM_EXTRA,
         `${f.left} · ${f.right}`,
