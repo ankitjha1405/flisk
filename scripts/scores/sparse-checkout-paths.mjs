@@ -64,20 +64,20 @@ export function sparseJobs(text, readAction = () => "", repo = "flisk-sh/flisk")
 		const steps = pair.value?.get?.("steps", true);
 		if (!YAML.isSeq(steps)) continue;
 		const checkout = steps.items.find((s) => {
-			const withs = YAML.isMap(s) ? s.get("with", true) : null;
+			const inputs = YAML.isMap(s) ? s.get("with", true) : null;
 			return (
 				/^actions\/checkout@/.test(String(s?.get?.("uses") ?? "")) &&
-				YAML.isMap(withs) &&
-				withs.get("sparse-checkout") &&
-				isSelf(withs.get("repository"), repo)
+				YAML.isMap(inputs) &&
+				inputs.get("sparse-checkout") &&
+				isSelf(inputs.get("repository"), repo)
 			);
 		});
 		if (!checkout) continue;
-		const withs = checkout.get("with", true);
-		const checkoutPath = String(withs.get("path") ?? "")
+		const inputs = checkout.get("with", true);
+		const checkoutPath = String(inputs.get("path") ?? "")
 			.replace(/^\.\/?/, "")
 			.replace(/\/$/, "");
-		const patterns = String(withs.get("sparse-checkout"))
+		const patterns = String(inputs.get("sparse-checkout"))
 			.split("\n")
 			.map((l) => l.trim().replace(/^\//, "").replace(/\/$/, ""))
 			.filter((l) => l && !l.startsWith("#"));

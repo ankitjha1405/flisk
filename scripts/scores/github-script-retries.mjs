@@ -34,9 +34,9 @@ export function githubScriptSteps(text) {
 			if (!YAML.isMap(step)) continue;
 			const uses = step.get("uses");
 			if (typeof uses !== "string" || !/^actions\/github-script@/.test(uses)) continue;
-			const withs = step.get("with", true);
-			const retries = YAML.isMap(withs) ? withs.get("retries") : undefined;
-			const script = YAML.isMap(withs) ? String(withs.get("script") ?? "") : "";
+			const inputs = step.get("with", true);
+			const retries = YAML.isMap(inputs) ? inputs.get("retries") : undefined;
+			const script = YAML.isMap(inputs) ? String(inputs.get("script") ?? "") : "";
 			out.push({
 				line: counter.linePos(step.range?.[0] ?? 0).line,
 				where,
