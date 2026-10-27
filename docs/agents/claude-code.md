@@ -2,13 +2,9 @@
 
 [← Back to the README](../../README.md#pick-your-agent)
 
-<p align="center">
-<a href="claude-code.md"><img src="../assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="36"></a>
-<a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="36"></a>
-<a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="36"></a>
-<a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="36"></a>
-<a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="36"></a>
-</p>
+<table>
+<tr><td><a href="claude-code.md"><img src="../assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="44"></a><a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="../assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td>
 
 **1. Install Claude Code and Flisk**
 
@@ -40,6 +36,9 @@ This writes `.mcp.json` in the project. Claude Code asks you to approve project 
 ```
 
 Docs: [setup](https://code.claude.com/docs/en/setup) · [MCP](https://code.claude.com/docs/en/mcp) · [memory](https://code.claude.com/docs/en/memory) · [skills](https://code.claude.com/docs/en/skills)
+
+</td></tr>
+</table>
 
 ---
 

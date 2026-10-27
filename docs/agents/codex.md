@@ -2,13 +2,9 @@
 
 [← Back to the README](../../README.md#pick-your-agent)
 
-<p align="center">
-<a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="36"></a>
-<a href="codex.md"><img src="../assets/agents/tab-codex-active.svg" alt="Codex (selected)" height="36"></a>
-<a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="36"></a>
-<a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="36"></a>
-<a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="36"></a>
-</p>
+<table>
+<tr><td><a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="44"></a><a href="codex.md"><img src="../assets/agents/tab-codex-active.svg" alt="Codex (selected)" height="44"></a><a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="../assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td>
 
 **1. Install Codex and Flisk**
 
@@ -42,6 +38,9 @@ args = ["mcp"]
 ```
 
 Docs: [CLI](https://learn.chatgpt.com/docs/codex/cli.md) · [MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) · [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md.md) · [skills](https://learn.chatgpt.com/docs/build-skills.md)
+
+</td></tr>
+</table>
 
 ---
 

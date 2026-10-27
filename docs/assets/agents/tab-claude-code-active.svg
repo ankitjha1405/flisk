@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="136" height="36" viewBox="0 0 136 36" role="img" aria-label="Claude Code (selected)">
+<svg xmlns="http://www.w3.org/2000/svg" width="129" height="44" viewBox="0 0 129 44" role="img" aria-label="Claude Code (selected)">
 <title>Claude Code (selected)</title>
-<style>.t{fill:#ffffff}.b{fill:#0969da;stroke:#0969da}@media (prefers-color-scheme:dark){.b{fill:#1f6feb;stroke:#1f6feb}}</style>
-<rect class="b" x="0.5" y="0.5" width="135" height="35" rx="8"/>
-<text class="t" x="68.0" y="23" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">Claude Code</text>
+<style>.t{fill:#1f2328}.l{fill:#d1d9e0}.u{fill:#fd8c73}.h{fill:#818b98;fill-opacity:0}
+@media (prefers-color-scheme:dark){.t{fill:#f0f6fc}.l{fill:#3d444d}.u{fill:#f78166}}</style>
+<rect class="l" x="0" y="43" width="129" height="1"/>
+<rect class="u" x="8" y="41" width="113" height="3" rx="1.5"/>
+<text class="t" x="64.5" y="27.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">Claude Code</text>
 </svg>
