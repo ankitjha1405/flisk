@@ -1,9 +1,8 @@
 // Copyright (c) 2026 Flisk Landscape contributors
 // SPDX-License-Identifier: MIT
 // How fast GitHub stars arrive: new stars in the last 24 hours, with the total, the last 7 days and the 24 hours before
-// that in the summary, so a launch-day spike reads against a normal day. The stargazers are read newest first and paged
-// until they are older than 7 days. (A `last: 100` page of a DESC list would be the OLDEST stars; `first: 100` with
-// `after:` is the newest ones.) A cap on pages keeps a runaway count from burning the API quota; when it is hit the
+// that in the summary, so a launch-day spike reads against a normal day. The stargazers are read newest first (the REST
+// list is oldest first, so from its last page backwards) until they are older than 7 days. A cap on pages keeps a runaway count from burning the API quota; when it is hit the
 // counts are lower bounds and the summary says so.
 import { round1 } from "./lib.mjs";
 
@@ -19,26 +18,24 @@ export const meta = {
 export const MAX_PAGES = 30;
 const HOUR = 3600 * 1000;
 
-const query = (owner, name, after) => `query { repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) {
-	stargazers(first: 100, orderBy: {field: STARRED_AT, direction: DESC}${after ? `, after: ${JSON.stringify(after)}` : ""}) {
-		totalCount pageInfo { hasNextPage endCursor } edges { starredAt } } } }`;
+const PAGE = 100;
 
 // Star times (ISO strings, newest first) back to `since`, the total, and whether the page cap cut the walk short.
+// REST rather than GraphQL: the Actions token gets "Resource not accessible by integration" from the GraphQL
+// stargazers connection. REST lists oldest first, so the walk starts at the last page and goes backwards.
 export function starsSince(gh, repo, since) {
-	const [owner, name] = repo.split("/");
+	const total = gh(["api", `repos/${repo}`]).stargazers_count ?? 0;
 	const times = [];
-	let total = 0;
-	let after = null;
-	for (let page = 1; page <= MAX_PAGES; page++) {
-		const stargazers = gh(["api", "graphql", "-f", `query=${query(owner, name, after)}`]).data.repository.stargazers;
-		total = stargazers.totalCount;
-		const edges = stargazers.edges ?? [];
-		times.push(...edges.map((e) => e.starredAt));
-		const oldest = edges.at(-1)?.starredAt;
-		if (!stargazers.pageInfo.hasNextPage || !oldest || new Date(oldest) < since) return { times, total, capped: false };
-		after = stargazers.pageInfo.endCursor;
+	const lastPage = Math.ceil(total / PAGE);
+	for (let page = lastPage, walked = 1; page >= 1; page--, walked++) {
+		if (walked > MAX_PAGES) return { times, total, capped: true };
+		const stars = gh(["api", "-H", "Accept: application/vnd.github.star+json", `repos/${repo}/stargazers?per_page=${PAGE}&page=${page}`]);
+		const newestFirst = stars.map((s) => s.starred_at).reverse();
+		times.push(...newestFirst);
+		const oldest = newestFirst.at(-1);
+		if (!oldest || new Date(oldest) < since) break;
 	}
-	return { times, total, capped: true };
+	return { times, total, capped: false };
 }
 
 export function measure(ctx) {

@@ -9,29 +9,17 @@ const HOUR = 3600 * 1000;
 // An ISO time `h` hours before NOW.
 const ago = (h) => new Date(NOW.getTime() - h * HOUR).toISOString().replace(".000", "");
 
-// A fake `gh api graphql` serving stargazers newest first, 100 to a page, like repository.stargazers(first: 100, DESC).
+// A fake `gh api` serving the REST stargazers list oldest first, 100 to a page, like /stargazers with the star media type.
 function fakeGh(starTimes, total = starTimes.length, calls = []) {
+	// Stars beyond the ones given (the total is larger) are ancient, and sit at the oldest end.
+	const oldestFirst = [...Array.from({ length: Math.max(0, total - starTimes.length) }, () => ago(1e5)), ...[...starTimes].reverse()];
 	return (args) => {
-		assert.deepEqual(args.slice(0, 3), ["api", "graphql", "-f"]);
-		const q = args[3].replace(/^query=/, "");
-		assert.match(q, /stargazers\(first: 100, orderBy: \{field: STARRED_AT, direction: DESC\}/);
-		const after = /after: "([^"]*)"/.exec(q)?.[1];
-		calls.push(after ?? null);
-		const start = after ? Number(Buffer.from(after, "base64").toString()) : 0;
-		const edges = starTimes.slice(start, start + 100).map((starredAt) => ({ starredAt }));
-		const end = start + edges.length;
-		const hasNextPage = end < starTimes.length;
-		return {
-			data: {
-				repository: {
-					stargazers: {
-						totalCount: total,
-						pageInfo: { hasNextPage, endCursor: Buffer.from(String(end)).toString("base64") },
-						edges,
-					},
-				},
-			},
-		};
+		assert.equal(args[0], "api");
+		if (args.length === 2) return { stargazers_count: total };
+		assert.deepEqual(args.slice(1, 3), ["-H", "Accept: application/vnd.github.star+json"]);
+		const page = Number(/&page=(\d+)/.exec(args[3])[1]);
+		calls.push(page);
+		return oldestFirst.slice((page - 1) * 100, page * 100).map((starred_at) => ({ starred_at }));
 	};
 }
 
@@ -50,8 +38,7 @@ test("counts the last 24 hours, the 24 hours before, and 7 days, over two pages"
 	assert.equal(r.summary, "120 in 24 h, 5 in the 24 h before, 128 in 7 d (18.3 a day), 1234 in total");
 	// Page two holds the first star older than 7 days, so there is no third request.
 	assert.equal(calls.length, 2);
-	assert.equal(calls[0], null);
-	assert.ok(calls[1]);
+	assert.deepEqual(calls, [13, 12]);
 });
 
 test("a star exactly 24 hours old belongs to the previous day, one in the future is not counted", () => {
