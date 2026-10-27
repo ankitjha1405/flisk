@@ -137,7 +137,7 @@ const FRAMES = {
           text(W - SIDE - 188, 16, f.right, { font: RETRO, size: 12, fill: "#000" }),
           `<rect x="${SIDE}" y="25" width="${W - 2 * SIDE}" height="1" fill="#ffffff"/>`,
           bevel(SIDE + 3, 28, 64, 22),
-          `<rect x="${SIDE + 9}" y="33" width="5" height="5" fill="#c00"/><rect x="${SIDE + 15}" y="33" width="5" height="5" fill="#080"/><rect x="${SIDE + 9}" y="39" width="5" height="5" fill="#00a"/><rect x="${SIDE + 15}" y="39" width="5" height="5" fill="#cc0"/>`,
+          `<rect x="${SIDE + 8}" y="33" width="13" height="9" fill="#008080" stroke="#000" stroke-width="1"/><rect x="${SIDE + 12}" y="42" width="5" height="2" fill="#000"/><rect x="${SIDE + 10}" y="44" width="9" height="1.5" fill="#000"/>`,
           text(SIDE + 25, 44, "Start", { font: RETRO, size: 12, weight: 700, fill: "#000" }),
           bevel(SIDE + 74, 28, 170, 22, true),
           text(SIDE + 82, 43.5, "Flisk Setup", { font: RETRO, size: 12, weight: 700, fill: "#000" }),
