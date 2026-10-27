@@ -5,8 +5,10 @@
 // that prints JSON nobody wrote down has a shape callers guess at, and a change to it breaks them without a doc diff
 // to review. The commands are json-coverage's: leaf commands of the real command tree in cli/dist, without the
 // human-only (mcp-parity) and interactive (json-coverage) ones, that accept --json. A command counts as documented
-// when `flisk <its path>` appears in the page, anywhere (prose, tables or code), as a whole command: `flisk up` in
-// `flisk upgrade` does not count. An alias does not count either: readers look a command up by its name. Ratchet up.
+// when `flisk <its path>` appears in the page, anywhere (prose, tables or code), as a whole command (`flisk up` in
+// `flisk upgrade` does not count), or when a list item starts with the path in backticks, the page's own convention
+// for a command's fields: "- `config regenerate`: ...", "- `config enable-infra` and `config disable-infra`: ...". An
+// alias does not count: readers look a command up by its name. Ratchet up.
 import { INTERACTIVE } from "./json-coverage.mjs";
 import { commandTree, has, read, round1 } from "./lib.mjs";
 import { isHumanOnly } from "./mcp-parity.mjs";
@@ -39,7 +41,12 @@ export function documents(text, commandPath) {
 		if (/[\w-]/.test(flat[at - 1] ?? " ")) continue;
 		if (!/[\w-]/.test(flat[at + needle.length] ?? " ")) return true;
 	}
-	return false;
+	// A field list item: "- `<path>`: ..." or "- `<path>` and `<other>`: ...", the path alone or before its flags.
+	return flat.split("\n").some((line) => {
+		const item = /^\s*[-*] (.+?):/.exec(line)?.[1];
+		if (!item) return false;
+		return [...item.matchAll(/`([^`]+)`/g)].some((m) => m[1] === commandPath || m[1].startsWith(`${commandPath} --`));
+	});
 }
 
 export async function measure({ root }) {

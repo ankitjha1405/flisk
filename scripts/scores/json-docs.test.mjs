@@ -54,6 +54,14 @@ test("documents needs `flisk <path>` as a whole command, across spaces, not insi
 	assert.equal(documents("flisk config", "config verify"), false);
 });
 
+test("documents accepts the page's field list items that start with the command path in backticks", () => {
+	assert.equal(documents("- `config regenerate`: `dryRun`, `hasChanges`", "config regenerate"), true);
+	assert.equal(documents("- `config enable-infra` and `config disable-infra`: `service`", "config disable-infra"), true);
+	assert.equal(documents("- `up --dry-run`: `ok`, `dryRun`", "up"), true);
+	assert.equal(documents("- `upgrade`: something", "up"), false);
+	assert.equal(documents("The `config regenerate` command: rewrites files", "config regenerate"), false);
+});
+
 test("jsonCommands: leaves with --json, without human-only and interactive ones", async () => {
 	const root = fixture({ "cli/dist/program.js": PROGRAM });
 	try {

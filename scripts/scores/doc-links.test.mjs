@@ -85,7 +85,7 @@ test("a missing target, a wrong case and a path outside the repo are findings; f
 	assert.equal(r.summary, "7 relative links in 2 Markdown files, 3 broken");
 });
 
-test("the scope: READMEs and AGENTS.md anywhere, docs/cli/examples/scripts Markdown and local skills only", () => {
+test("the scope: READMEs and AGENTS.md anywhere, docs/cli/examples/scripts/runtime/tests Markdown and local skills only", () => {
 	const root = fixture({
 		"README.md": "",
 		"runtime/x/AGENTS.md": "",
@@ -111,6 +111,8 @@ test("the scope: READMEs and AGENTS.md anywhere, docs/cli/examples/scripts Markd
 			"docs/a.md",
 			"examples/e/README.md",
 			"runtime/x/AGENTS.md",
+			"runtime/x/notes.md",
+			"tests/t.md",
 		]);
 	} finally {
 		rmSync(root, { recursive: true });
