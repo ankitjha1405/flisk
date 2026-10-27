@@ -20,7 +20,8 @@ wsl --install -d Ubuntu
 **3. In the Ubuntu terminal**, install Tilt and Flisk, then check the machine:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh \
+  | bash
 curl -fsSL https://flisk.sh/install.sh | sh
 flisk doctor
 ```

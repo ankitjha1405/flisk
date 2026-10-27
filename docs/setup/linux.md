@@ -12,7 +12,8 @@
 **2. For a database, one gateway URL and the same container you deploy**, also install Docker Engine 25+ with the Compose plugin 2.20.2+ ([install guide](https://docs.docker.com/engine/install/)), and Tilt 0.25+:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh \
+  | bash
 ```
 
 Start Docker with `sudo systemctl start docker`. To run `docker` without `sudo`, follow Docker's [post-install steps](https://docs.docker.com/engine/install/linux-postinstall/).

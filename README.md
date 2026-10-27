@@ -359,7 +359,8 @@ Set up your machine. Pick your system:
 **2. For a database, one gateway URL and the same container you deploy**, also start Docker Desktop, OrbStack or Colima, and install Tilt:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh \
+  | bash
 ```
 
 **3. Install Flisk and check the machine:**

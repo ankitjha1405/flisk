@@ -15,7 +15,8 @@
 - Tilt:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh \
+  | bash
 ```
 
 **3. Install Flisk and check the machine:**
