@@ -96,7 +96,7 @@ npm install -g @flisk-sh/flisk
 Then paste the prompt above into Claude Code. `flisk project` writes the Flisk skills to `.claude/skills/`, which Claude Code loads. To let Claude Code drive Flisk through MCP tools, run `claude mcp add --scope project flisk -- flisk mcp`. Windows install, the `.mcp.json` file and the `AGENTS.md` tip: [full Claude Code setup](docs/agents/claude-code.md).
 
 </td></tr>
-<tr><td><img src="docs/assets/tabs/agents/claude-code-bottom.4a534472.svg" alt="Claude Code input: Build me a small online shop with a storefront and an orders API…" width="100%" align="top"></td></tr>
+<tr><td><img src="docs/assets/tabs/agents/claude-code-bottom.acea4bfd.svg" alt="Claude Code input: Build me a small online shop with a storefront and an orders API…" width="100%" align="top"></td></tr>
 </table>
 <!-- /tabs:agents -->
 

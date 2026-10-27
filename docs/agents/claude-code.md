@@ -41,7 +41,7 @@ This writes `.mcp.json` in the project. Claude Code asks you to approve project 
 Docs: [setup](https://code.claude.com/docs/en/setup) · [MCP](https://code.claude.com/docs/en/mcp) · [memory](https://code.claude.com/docs/en/memory) · [skills](https://code.claude.com/docs/en/skills)
 
 </td></tr>
-<tr><td><img src="../assets/tabs/agents/claude-code-bottom.4a534472.svg" alt="Claude Code input: Build me a small online shop with a storefront and an orders API…" width="100%" align="top"></td></tr>
+<tr><td><img src="../assets/tabs/agents/claude-code-bottom.acea4bfd.svg" alt="Claude Code input: Build me a small online shop with a storefront and an orders API…" width="100%" align="top"></td></tr>
 </table>
 <!-- /tabs:agents -->
 
