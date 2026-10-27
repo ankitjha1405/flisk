@@ -1,6 +1,7 @@
 {
 	"action-consistency": 31,
 	"ade": 50,
+	"competitor-coverage": 57.2,
 	"env-var-consistency": 9,
 	"error-contract": 48.3,
 	"install-weight": 1133.1,
