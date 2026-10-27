@@ -172,7 +172,8 @@ const CHECKS = [
 		area: "machine-interface",
 		weight: 3,
 		title: "Agent sessions are inspectable (MCP tool)",
-		run: (r) => ({ pass: mcpToolNames(r).includes("get_agent_sessions") }),
+		// agent_sessions was get_agent_sessions before the tools were renamed noun-first; a checkout of either passes.
+		run: (r) => ({ pass: mcpToolNames(r).some((name) => ["agent_sessions", "get_agent_sessions"].includes(name)) }),
 	},
 	// substrate / runtime: does the agent have somewhere durable to run
 	{
