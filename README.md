@@ -80,17 +80,11 @@ Stop my Flisk stack with flisk down and confirm nothing is left running.
 
 #### Pick your agent
 
-Flisk works the same way in every agent: install it, paste the prompt, and the agent runs the Flisk commands. `flisk project` also adds the Flisk skills and an `AGENTS.md` to your project, so the agent knows how to use Flisk. Pick your agent for the exact setup:
+Flisk works the same way in every agent: install it, paste the prompt, and the agent runs the Flisk commands. `flisk project` also adds the Flisk skills and an `AGENTS.md` to your project, so the agent knows how to use Flisk. Pick your agent's tab for the exact setup:
 
-<p align="center">
-<a href="docs/agents/claude-code.md"><img src="docs/assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="36"></a>
-<a href="docs/agents/codex.md"><img src="docs/assets/agents/tab-codex.svg" alt="Codex" height="36"></a>
-<a href="docs/agents/cursor.md"><img src="docs/assets/agents/tab-cursor.svg" alt="Cursor" height="36"></a>
-<a href="docs/agents/copilot.md"><img src="docs/assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="36"></a>
-<a href="docs/agents/gemini-cli.md"><img src="docs/assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="36"></a>
-</p>
-
-**Claude Code** (for another agent, pick its tab above):
+<table>
+<tr><td><a href="docs/agents/claude-code.md"><img src="docs/assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="44"></a><a href="docs/agents/codex.md"><img src="docs/assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="docs/agents/cursor.md"><img src="docs/assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="docs/agents/copilot.md"><img src="docs/assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="docs/agents/gemini-cli.md"><img src="docs/assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="docs/assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td>
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -98,6 +92,9 @@ npm install -g @flisk-sh/flisk
 ```
 
 Then paste the prompt above into Claude Code. `flisk project` writes the Flisk skills to `.claude/skills/`, which Claude Code loads. To let Claude Code drive Flisk through MCP tools, run `claude mcp add --scope project flisk -- flisk mcp`. Windows install, the `.mcp.json` file and the `AGENTS.md` tip: [full Claude Code setup](docs/agents/claude-code.md).
+
+</td></tr>
+</table>
 
 Any other agent that can run terminal commands works too. Point it at `AGENTS.md`, or connect it to `flisk mcp`, which runs an MCP server over stdio.
 

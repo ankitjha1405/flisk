@@ -2,13 +2,9 @@
 
 [← Back to the README](../../README.md#pick-your-agent)
 
-<p align="center">
-<a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="36"></a>
-<a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="36"></a>
-<a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="36"></a>
-<a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="36"></a>
-<a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli-active.svg" alt="Gemini CLI (selected)" height="36"></a>
-</p>
+<table>
+<tr><td><a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="44"></a><a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="cursor.md"><img src="../assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli-active.svg" alt="Gemini CLI (selected)" height="44"></a><img src="../assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td>
 
 **1. Install Gemini CLI and Flisk**
 
@@ -40,6 +36,9 @@ This writes `.gemini/settings.json` in the project. Add `-s user` to use it ever
 ```
 
 Docs: [install](https://geminicli.com/docs/get-started/installation/) · [MCP](https://geminicli.com/docs/tools/mcp-server/) · [GEMINI.md](https://geminicli.com/docs/cli/gemini-md/) · [skills](https://geminicli.com/docs/cli/skills/)
+
+</td></tr>
+</table>
 
 ---
 

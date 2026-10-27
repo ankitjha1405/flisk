@@ -2,13 +2,9 @@
 
 [← Back to the README](../../README.md#pick-your-agent)
 
-<p align="center">
-<a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="36"></a>
-<a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="36"></a>
-<a href="cursor.md"><img src="../assets/agents/tab-cursor-active.svg" alt="Cursor (selected)" height="36"></a>
-<a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="36"></a>
-<a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="36"></a>
-</p>
+<table>
+<tr><td><a href="claude-code.md"><img src="../assets/agents/tab-claude-code.svg" alt="Claude Code" height="44"></a><a href="codex.md"><img src="../assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="cursor.md"><img src="../assets/agents/tab-cursor-active.svg" alt="Cursor (selected)" height="44"></a><a href="copilot.md"><img src="../assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="gemini-cli.md"><img src="../assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="../assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td>
 
 **1. Install Cursor and Flisk**
 
@@ -36,6 +32,9 @@ Cursor has no command to add a server, so create `.cursor/mcp.json` in the proje
 ```
 
 Docs: [CLI install](https://cursor.com/docs/cli/installation) · [MCP](https://cursor.com/docs/context/mcp) · [rules](https://cursor.com/docs/context/rules) · [skills](https://cursor.com/docs/context/skills)
+
+</td></tr>
+</table>
 
 ---
 
