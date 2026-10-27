@@ -417,7 +417,9 @@ describe.skipIf(!hasTilt)("golden layer build script", () => {
       stillMissingImages: ["flisk-project-l3-frontend:latest"],
     });
     expect(run.status).toBe(1);
-    expect(run.stdout).toContain("Golden images missing after the build: flisk-project-l3-frontend:latest");
+    expect(run.stdout).toContain(
+      "Golden images missing after the build: flisk-project-l3-frontend:latest",
+    );
     expect(run.stdout).not.toContain("Golden layers built");
   });
 
