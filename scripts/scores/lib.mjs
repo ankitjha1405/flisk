@@ -50,7 +50,17 @@ export function walk(root, dir, keep = () => true) {
 	return out;
 }
 
-export const isTestFile = (rel) => /(^|\/)__tests__\//.test(rel) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(rel);
+// Markdown of the skills this repo authors, the ones .claude/skills/LOCAL lists. The other skills are synced from the
+// flisk-skills repo by scripts/sync-flisk-skills.sh, so a finding in them is fixed there, not here.
+export function localSkillDocs(root) {
+	const names = read(root, ".claude/skills/LOCAL")
+		.split("\n")
+		.map((l) => l.trim())
+		.filter((l) => l && !l.startsWith("#"));
+	return names.flatMap((name) => walk(root, `.claude/skills/${name}`, (rel) => rel.endsWith(".md")));
+}
+
+export const isTestFile =(rel) => /(^|\/)__tests__\//.test(rel) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(rel);
 
 export function median(values) {
 	const v = [...values].sort((a, b) => a - b);
@@ -88,7 +98,7 @@ const trees = new Map();
 
 // The CLI's real command tree, read from the committed cli/dist build (the same program the shell completions read),
 // or null when the build or its dependencies are missing. Each command: { path: "config verify", options: ["--json"],
-// leaf: true }. Root options apply to every command.
+// leaf: true, allowUnknown: false }. Root options apply to every command.
 export async function commandTree(root) {
 	if (!trees.has(root)) trees.set(root, loadTree(root));
 	return trees.get(root);
@@ -108,13 +118,20 @@ async function loadTree(root) {
 	const visit = (cmd, prefix) => {
 		for (const sub of cmd.commands) {
 			const p = [...prefix, sub.name()];
-			commands.push({ path: p.join(" "), aliases: sub.aliases(), options: longs(sub), leaf: sub.commands.length === 0 });
+			commands.push({
+				path: p.join(" "),
+				aliases: sub.aliases(),
+				options: longs(sub),
+				leaf: sub.commands.length === 0,
+				// Commander keeps allowUnknownOption() in a private field; `import` passes unknown flags to flisk-import.
+				allowUnknown: sub._allowUnknownOption === true,
+			});
 			visit(sub, p);
 		}
 	};
 	visit(program, []);
 	// `help` is Commander's built-in help command, not a registered one.
-	commands.push({ path: "help", aliases: [], options: [], leaf: true });
+	commands.push({ path: "help", aliases: [], options: [], leaf: true, allowUnknown: false });
 	return { rootOptions: [...longs(program), "--help", "-h"], commands };
 }
 

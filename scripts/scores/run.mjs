@@ -22,9 +22,12 @@ import { ghJson, MODES, SOURCES } from "./lib.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const BASELINE_FILE = path.join(HERE, "baseline.json");
 
-export async function loadScorers(dir = HERE) {
+// Every scorer in dir, or only the named ones: --only imports nothing else, so a job that runs one artifact scorer does
+// not need the dependencies (cli/dist, typescript) the files scorers load.
+export async function loadScorers(dir = HERE, only = null) {
 	const files = readdirSync(dir)
 		.filter((f) => f.endsWith(".mjs") && !f.endsWith(".test.mjs") && !["run.mjs", "lib.mjs"].includes(f))
+		.filter((f) => !only || only.includes(f.replace(/\.mjs$/, "")))
 		.sort();
 	const scorers = [];
 	for (const file of files) {
@@ -152,9 +155,7 @@ async function main() {
 	const sources = values.source === "all" ? SOURCES : values.source.split(",");
 	const only = values.only?.split(",");
 	const baseline = readBaseline();
-	const scorers = (await loadScorers()).filter((s) =>
-		only ? only.includes(s.meta.id) : sources.includes(s.meta.source),
-	);
+	const scorers = (await loadScorers(HERE, only)).filter((s) => only || sources.includes(s.meta.source));
 	if (only) {
 		const unknown = only.filter((id) => !scorers.some((s) => s.meta.id === id));
 		if (unknown.length) throw new Error(`unknown scorer: ${unknown.join(", ")}`);
