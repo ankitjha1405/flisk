@@ -6,20 +6,28 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DEFAULT, gaugeSvg, plan, reasons, RUNTIMES, SETUPS, SIZES, score, serviceScore, teamScore, verdict } from "./fit.mjs";
 
+const pick = (runtime, setup, size) => ({
+  runtime: RUNTIMES.find((r) => r.slug === runtime),
+  setup: SETUPS.find((s) => s.slug === setup),
+  size: SIZES.find((s) => s.slug === size),
+});
+const total = ({ runtime, setup, size }) => score(runtime, setup, size).total;
+
 test("the default answers score 82%, as on flisk.sh/fit (Node/TS/Bun, Compose, 8 services, 2 pains, 10 developers)", () => {
-  assert.equal(score(DEFAULT.runtime, DEFAULT.setup, DEFAULT.size), 82);
-  assert.equal(verdict(82).name, "Strong fit");
+  assert.equal(total(DEFAULT), 82);
+  assert.equal(score(DEFAULT.runtime, DEFAULT.setup, DEFAULT.size).cap, null);
+  assert.equal(verdict(82).name, "Great fit");
 });
 
 test("the services and team curves are the website's", () => {
   assert.deepEqual([1, 2, 3, 4, 5, 60].map(serviceScore), [4, 8, 12, 16, 20, 20]);
   assert.deepEqual([1, 4, 5, 9, 10, 29, 30].map(teamScore), [6, 6, 10, 10, 14, 14, 16]);
-  assert.deepEqual([75, 74, 45, 44].map((n) => verdict(n).name), ["Strong fit", "Partial fit", "Partial fit", "Not a fit yet"]);
+  assert.deepEqual([75, 74, 45, 44].map((n) => verdict(n).name), ["Great fit", "Could fit", "Could fit", "Not a fit yet"]);
 });
 
-test("one service is called out as not a fit, and every page lists the same assumptions", () => {
+test("one part is called out as not a fit, and every page lists the same assumptions", () => {
   const one = reasons(RUNTIMES[0], SETUPS[0], SIZES[0]);
-  assert.ok(one.some(([mark, text]) => mark === "no" && /One service/.test(text)));
+  assert.ok(one.some(([mark, text]) => mark === "no" && /One part/.test(text)));
   assert.ok(one.some(([, text]) => /not measured savings/.test(text)));
 });
 
@@ -44,5 +52,34 @@ test("the gauge fills to the score, honors reduced motion and rests filled witho
   const rest = Number(/stroke-dashoffset:([\d.]+);animation/.exec(svg)[1]);
   assert.ok(Math.abs(rest - c * 0.18) < 0.05);
   assert.match(svg, /prefers-reduced-motion:reduce/);
-  assert.match(svg, /aria-label="82% fit score: Strong fit"/);
+  assert.match(svg, /aria-label="82% fit score: Great fit"/);
+});
+
+test("the verdict never contradicts the reasons: 1 part is never a fit, 2-4 parts never a great fit", () => {
+  for (const runtime of RUNTIMES) {
+    for (const setup of SETUPS) {
+      assert.ok(total({ runtime, setup, size: SIZES[0] }) <= 40, `${runtime.slug}/${setup.slug}/1`);
+      assert.equal(verdict(total({ runtime, setup, size: SIZES[0] })).name, "Not a fit yet");
+      assert.notEqual(verdict(total({ runtime, setup, size: SIZES[1] })).name, "Great fit");
+    }
+  }
+  const capped = score(...Object.values(pick("node", "kubernetes", "1")));
+  assert.deepEqual([capped.raw, capped.total, capped.cap.limit], [70, 40, 40]);
+});
+
+test("weights follow what the CLI ships: Python and Go have scaffolds, native processes run without Docker", () => {
+  assert.ok(total(pick("python", "compose", "5-plus")) > total(pick("jvm", "compose", "5-plus")));
+  assert.equal(total(pick("go", "compose", "5-plus")), total(pick("python", "compose", "5-plus")));
+  assert.equal(total(pick("node", "native", "5-plus")), 82, "native processes fit as well as Compose");
+  assert.ok(reasons(...Object.values(pick("python", "compose", "5-plus"))).some(([, text]) => /--language python/.test(text)));
+});
+
+test("every page shows how its score adds up, with the assumed rows marked", () => {
+  const { pages } = plan();
+  for (const [file, text] of pages) {
+    assert.match(text, /\*\*How the score adds up\*\*/, file);
+    assert.match(text, /\| Pains \(we assumed\) \|/, file);
+    const shown = Number(/\| \*\*Score\*\* \| \| \*\*(\d+)%\*\* \|/.exec(text)[1]);
+    assert.match(text, new RegExp(`score-${shown}\\.`), `${file}: gauge shows the table's score`);
+  }
 });
