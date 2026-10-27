@@ -391,11 +391,25 @@ Four ways to a running app: the simplest, a one-command demo, a project you set 
 For an app made of services you can start with one command each (an API, a website, a worker), put a `service.json` next to each one:
 
 ```json
-{ "schemaVersion": 1, "appName": "api", "appType": "backend", "command": "node server.js", "port": 4000, "healthCheckPath": "/health" }
+{
+  "schemaVersion": 1,
+  "appName": "api",
+  "appType": "backend",
+  "command": "node server.js",
+  "port": 4000,
+  "healthCheckPath": "/health"
+}
 ```
 
 ```json
-{ "schemaVersion": 1, "appName": "web", "appType": "frontend", "command": "node server.js", "port": 3000, "dependsOn": ["api"] }
+{
+  "schemaVersion": 1,
+  "appName": "web",
+  "appType": "frontend",
+  "command": "node server.js",
+  "port": 3000,
+  "dependsOn": ["api"]
+}
 ```
 
 Then start everything from the project folder:
