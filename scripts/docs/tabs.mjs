@@ -171,7 +171,7 @@ export function plan(root) {
     for (const embed of embeds) {
       const from = path.posix.dirname(embed.file);
       const rel = (to) => path.posix.relative(from, to) || path.posix.basename(to);
-      const img = (file, alt, width) => `<img src="${rel(file)}" alt="${esc(alt)}" width="${width}" height="${HEIGHT}">`;
+      const img = (file, alt, width) => `<img src="${rel(file)}" alt="${esc(alt)}" width="${width}" height="${HEIGHT}" align="top">`;
       const widthOf = (svg) => /width="(\d+)"/.exec(svg)[1];
       const links = group.tabs.map((tab) => {
         const selected = tab.slug === embed.selected;
