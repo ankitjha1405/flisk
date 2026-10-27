@@ -29,7 +29,7 @@ Ask your AI agent for an app, or type four commands yourself.<br />Flisk sets up
 
 ### With your AI agent
 
-Install Flisk, then paste a prompt into your coding agent. Claude Code, Codex, Cursor, GitHub Copilot, and any other agent that can run commands will work. Every block below has a copy button.
+Install Flisk, then paste a prompt into your coding agent. Claude Code, Codex, Cursor, and any other agent that can run commands will work. Every block below has a copy button.
 
 ```bash
 npm install -g @flisk-sh/flisk
@@ -83,7 +83,7 @@ Stop my Flisk stack with flisk down and confirm nothing is left running.
 Flisk works the same way in every agent: install it, paste the prompt, and the agent runs the Flisk commands. `flisk project` also adds the Flisk skills and an `AGENTS.md` to your project, so the agent knows how to use Flisk. Pick your agent's tab for the exact setup:
 
 <table>
-<tr><td><a href="docs/agents/claude-code.md"><img src="docs/assets/agents/tab-claude-code-active.svg" alt="Claude Code (selected)" height="44"></a><a href="docs/agents/codex.md"><img src="docs/assets/agents/tab-codex.svg" alt="Codex" height="44"></a><a href="docs/agents/cursor.md"><img src="docs/assets/agents/tab-cursor.svg" alt="Cursor" height="44"></a><a href="docs/agents/copilot.md"><img src="docs/assets/agents/tab-copilot.svg" alt="GitHub Copilot" height="44"></a><a href="docs/agents/gemini-cli.md"><img src="docs/assets/agents/tab-gemini-cli.svg" alt="Gemini CLI" height="44"></a><img src="docs/assets/agents/tab-rest.svg" alt="" height="44"></td></tr>
+<tr><td><a href="docs/agents/claude-code.md"><img src="docs/assets/agents/tabs/claude-code-selected.svg" alt="Claude Code (selected)" height="44"></a><a href="docs/agents/codex.md"><img src="docs/assets/agents/tabs/codex.svg" alt="Codex" height="44"></a><a href="docs/agents/cursor.md"><img src="docs/assets/agents/tabs/cursor.svg" alt="Cursor" height="44"></a><img src="docs/assets/agents/tabs/rest.svg" alt="" height="44"></td></tr>
 <tr><td>
 
 ```bash
