@@ -80,7 +80,7 @@ test("data problems: source, date, age, reason, ids, ice, acceptance", async () 
 		mk("dup", "covered"),
 		mk("dup", "covered"),
 		{ ...mk("noreason", "out-of-scope"), flisk: { status: "out-of-scope", scope: "out" } },
-		{ ...mk("noice", "missing"), ice: undefined },
+		{ ...mk("noscore", "missing"), ice: undefined },
 		{ ...mk("badice", "missing"), ice: { impact: 0, confidence: 5, ease: 5, basis: "out of range" } },
 		{ ...mk("noacc", "missing"), acceptance: undefined },
 		{ ...mk("nomatch", "covered"), match: ["Upper"] },
@@ -88,7 +88,7 @@ test("data problems: source, date, age, reason, ids, ice, acceptance", async () 
 	const root = fixture([{ id: "a", rows }]);
 	const { competitors, index } = loadAll(root);
 	const text = (await dataProblems(root, competitors[0], index.areas, NOW, null)).join("\n");
-	for (const re of [/old: source not re-checked since 2026-05-01/, /nosrc: source must be a URL/, /nodate: checked must be/, /dup: duplicate id/, /noreason: a out-of-scope row needs a reason/, /noice: ice is missing/, /badice: ice\.impact must be an integer from 1 to 10/, /noacc: a missing in-scope row needs an acceptance check/, /nomatch: match needs lower-case/])
+	for (const re of [/old: source not re-checked since 2026-05-01/, /nosrc: source must be a URL/, /nodate: checked must be/, /dup: duplicate id/, /noreason: a out-of-scope row needs a reason/, /noscore: ice is missing/, /badice: ice\.impact must be an integer from 1 to 10/, /noacc: a missing in-scope row needs an acceptance check/, /nomatch: match needs lower-case/])
 		assert.match(text, re);
 });
 
