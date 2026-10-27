@@ -63,7 +63,12 @@ export function invalidSkills(root) {
 	for (const name of readdirSync(dir)) {
 		if (!statSync(path.join(dir, name)).isDirectory() || name === "LOCAL") continue;
 		const fm = read(root, `.claude/skills/${name}/SKILL.md`).match(/^---\n([\s\S]*?)\n---/);
-		const field = (key) => fm?.[1].match(new RegExp(`^${key}:\\s*(.+)$`, "m"))?.[1].trim();
+		const field = (key) =>
+			fm?.[1]
+				.split("\n")
+				.find((l) => l.startsWith(`${key}:`) && l.slice(key.length + 1).trim())
+				?.slice(key.length + 1)
+				.trim();
 		if (field("name") !== name || (field("description") ?? "").length < 40) bad.push(name);
 	}
 	return bad;
