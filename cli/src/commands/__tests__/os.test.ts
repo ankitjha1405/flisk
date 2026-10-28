@@ -397,6 +397,7 @@ describe("launchFliskOs --json", () => {
   });
 
   it("gives up and stops the command when it never says where it listens", async () => {
+    const sigtermBefore = process.listenerCount("SIGTERM");
     const { calls, spawnFn } = fakeSpawn(() => {});
     const error = await launchFliskOs(
       { json: true },
@@ -405,6 +406,10 @@ describe("launchFliskOs --json", () => {
     expect((error as JsonCommandError).code).toBe("FLISKOS_FAILED");
     expect((error as JsonCommandError).message).toContain("did not say where it listens");
     expect(calls[0]?.child.kill).toHaveBeenCalled();
+    // A real child closes once it is killed; that is what puts the signal handlers back.
+    calls[0]?.child.emit("close", null);
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(process.listenerCount("SIGTERM")).toBe(sigtermBefore);
   });
 });
 
