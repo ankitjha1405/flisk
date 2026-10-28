@@ -29,6 +29,8 @@ function validate(schema, value, at = "$", defs = schema.$defs) {
   if (schema.type && schema.type !== kind) return [`${at}: is ${kind}, expected ${schema.type}`];
   if ("const" in schema && value !== schema.const) errors.push(`${at}: must be ${JSON.stringify(schema.const)}`);
   if (kind === "string") {
+    // The patterns come from the vendored agent-plugins.org schemas in this repo, never from input.
+    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp
     if (schema.pattern && !new RegExp(schema.pattern).test(value)) errors.push(`${at}: does not match ${schema.pattern}`);
     if (schema.minLength !== undefined && value.length < schema.minLength) errors.push(`${at}: is too short`);
     if (schema.maxLength !== undefined && value.length > schema.maxLength) errors.push(`${at}: is too long`);
@@ -115,7 +117,7 @@ test("the plugin ships every project skill, named after its folder, with no rela
   assert.ok(names.includes("flisk-build") && names.includes("flisk-up"));
   for (const name of names) {
     const text = readFileSync(path.join(ROOT, PLUGIN_DIR, "skills", name, "SKILL.md"), "utf8");
-    assert.match(text, new RegExp(`^---\\nname: ${name}\\n`), `${name}: frontmatter name`);
+    assert.ok(text.startsWith(`---\nname: ${name}\n`), `${name}: frontmatter name`);
     assert.doesNotMatch(text, /\]\((?:\.\.\/)+/, `${name}: a relative link points nowhere inside an installed plugin`);
   }
 });
