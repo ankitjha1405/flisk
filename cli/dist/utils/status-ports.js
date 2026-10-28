@@ -1,5 +1,4 @@
-import { STANDARD_PORTS } from "./constants.js";
-import { BRING_YOUR_OWN_TYPE } from "./constants.js";
+import { BRING_YOUR_OWN_TYPE, STANDARD_PORTS } from "./constants.js";
 import { resolveServicePath, resolveSubdomainBases, routesAsApi } from "./service-urls.js";
 export function buildServicePorts(resource, ingressHttp) {
     const appType = resource.config?.appType;

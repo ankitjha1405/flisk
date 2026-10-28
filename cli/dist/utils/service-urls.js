@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PROJECT_JSON } from "./constants.js";
+import { BRING_YOUR_OWN_TYPE, PROJECT_JSON } from "./constants.js";
 import { findProjectRoot } from "./paths.js";
-import { BRING_YOUR_OWN_TYPE } from "./constants.js";
 import { isApiServiceType } from "./resource-kind.js";
 /**
  * A bring-your-own service with a Traefik route (the default; `exposeViaProxy: false` turns it off). The engine routes it like a
