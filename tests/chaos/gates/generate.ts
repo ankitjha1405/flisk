@@ -114,7 +114,8 @@ function baseManifest(rng: Rng, name: string, others: string[]): Manifest {
   };
   if (type === "backend" && rng.chance(0.7)) manifest.healthCheckPath = rng.pick(HEALTH);
   if (rng.chance(0.4)) manifest.featuresEnabled = FEATURES.filter(() => rng.chance(0.3));
-  if (rng.chance(0.2)) manifest.replicas = 1 + rng.int(3);
+  // A frontend runs as one container (Compose is not generated for "<name>-1"), so only the other kinds scale.
+  if (type !== "frontend" && rng.chance(0.2)) manifest.replicas = 1 + rng.int(3);
   return manifest;
 }
 
