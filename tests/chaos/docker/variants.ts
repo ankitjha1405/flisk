@@ -95,7 +95,9 @@ export const VARIANTS: Variant[] = [
   v("build=string", { build: "Dockerfile" }, "reject"),
   v("build=null", { build: null }, "accept"),
 
-  ...bad("appType", ["database", "Backend", 7, "backend frontend"]),
+  ...bad("appType", [7]),
+  // An unknown appType string is not refused (real projects use legacy values such as "api") and nothing downstream breaks.
+  ...good("appType", ["database", "Backend", "backend frontend"]),
   v("appType=empty", { appType: "" }, "accept"),
   v("appType=null", { appType: null }, "accept"),
   // A language other than bun needs that language's files (go.mod, pyproject.toml, ...), which this project does not have.
@@ -127,14 +129,15 @@ export const VARIANTS: Variant[] = [
   v("schemaVersion=2", { schemaVersion: 2 }, "reject"),
   v("schemaVersion=str", { schemaVersion: "1" }, "reject"),
   v("dependsOn=string", { dependsOn: "postgres" }, "reject"),
-  v("dependsOn=self", { dependsOn: ["orders"] }, "reject"),
+  v("dependsOn=self", { dependsOn: ["$SELF"] }, "reject"),
   v("dependsOn=postgres", { dependsOn: ["postgres"] }, "accept"),
   v("dependsOn=unicode", { dependsOn: ["ünï"] }, "accept"),
   v("databaseName=bad", { databaseName: "a b" }, "reject"),
   v("databaseName=long", { databaseName: "d".repeat(100) }, "reject"),
   v("sablier=string", { sablier: "on" }, "reject"),
   v("nats.queueGroup=bad", { nats: { queueGroup: "a b" } }, "reject"),
-  v("restart=bad", { restart: "sometimes" }, "reject"),
+  // restart is not enumerated (nothing downstream reads it), so an odd value is accepted and nothing breaks.
+  v("restart=odd", { restart: "sometimes" }, "accept"),
   v("unknown.field", { totallyUnknown: { a: 1 } }, "accept"),
 ];
 

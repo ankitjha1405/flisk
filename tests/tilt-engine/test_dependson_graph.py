@@ -90,7 +90,7 @@ def test_declared_dependencies_reads_both_keys_and_ignores_wrong_types(tmp_path)
         "string": [],
         "dict": [],
         "none": [],
-        "mixed": ["a"],
+        "mixed": [],
         "empty": [],
     }
 
@@ -126,6 +126,31 @@ def test_a_wrong_typed_dependson_gives_no_edge_and_no_crash(tmp_path):
 def test_a_frontend_waits_for_a_backend_in_another_stack(tmp_path):
     """backendName was looked up among the frontend's own stack only, so a cross-stack backend gave no edge."""
     assert deps(tmp_path, "storefront", {"backendName": "ledger"}, frontend=True) == ["ledger"]
+
+
+LIBRARY_SERVICES = """
+all_services = {
+    'core': {'name': 'core', 'stack': 'core', 'resources': [
+        {'name': 'ledger', '_manifest': {'appType': 'backend'}},
+        {'name': 'kit', '_manifest': {'appType': 'library'}},
+        {'name': 'sdk-x', '_manifest': {'appType': 'sdk'}}]},
+}
+for _svc in list(all_services.values()):
+    for _res in _svc['resources']:
+        all_services[_res['name']] = _svc
+"""
+
+
+@TILT_REQUIRED
+def test_a_stack_name_leaves_out_resources_the_registration_loop_skips(tmp_path):
+    """library, sdk and infra get no Tilt resource, so nothing can wait for them."""
+    result = run_starlark(
+        tmp_path,
+        "load('@ORCHESTRATOR/apply_compose_resource_registration.star', 'resolve_dependency_to_resources')\n"
+        + LIBRARY_SERVICES
+        + "r = {'stack': resolve_dependency_to_resources('core', all_services)}\n",
+    )
+    assert result["stack"] == ["ledger"]
 
 
 @TILT_REQUIRED

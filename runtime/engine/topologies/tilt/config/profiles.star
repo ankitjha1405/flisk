@@ -241,7 +241,8 @@ def apply_focus_filter(cfg):
     focus_targets = cfg.get("focus", [])
 
     # Default to pre-alpha if no focus targets specified
-    if not focus_targets:
+    using_default_phase = not focus_targets
+    if using_default_phase:
         print("🎯 Mode: pre-alpha (use --focus for alpha/beta)")
         focus_targets = ["pre-alpha"]
 
@@ -266,7 +267,8 @@ def apply_focus_filter(cfg):
         target_lower = target.lower()
         # A service or stack that is itself called pre-alpha, alpha or beta is that service, not the release phase;
         # expanding it to the phase's (often empty) list turned focus mode off and started every service.
-        if target_lower in dynamic_phases and not _names_a_service(target):
+        # The default run asks for the pre-alpha phase itself, so only an explicit target can mean a service of that name.
+        if target_lower in dynamic_phases and (using_default_phase or not _names_a_service(target)):
             phase_services = dynamic_phases[target_lower]
             for svc in phase_services:
                 expanded.append(svc)

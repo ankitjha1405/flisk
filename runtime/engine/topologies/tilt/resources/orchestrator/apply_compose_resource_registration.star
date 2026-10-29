@@ -163,6 +163,17 @@ def _resolve_dependency_to_resource(dep_name, all_services_map):
     return dep_name + '-yaml'
 
 
+# App types the registration loop skips (see register_compose_resources): they get no Tilt resource, so nothing can wait for them
+# and their own dependsOn never reaches the graph.
+_UNREGISTERED_APP_TYPES = ['library', 'sdk', 'infra']
+
+
+def _is_registered_resource(res):
+    """True when the registration loop creates a Tilt resource for this discovered resource."""
+    app_type = (res.get('_manifest', {}) or {}).get('appType', 'backend')
+    return app_type not in _UNREGISTERED_APP_TYPES
+
+
 def _is_known_resource(name, all_services_map):
     """True when `name` is the name of a resource (a runnable service), not of a stack or an alias."""
     service = (all_services_map or {}).get(name)
@@ -194,7 +205,7 @@ def _resolve_dependency_to_resources(dep_name, all_services_map):
             continue
         for res in service.get('resources', []):
             res_name = res.get('name', '')
-            if res_name and not res.get('frontend', False) and res_name not in names:
+            if res_name and not res.get('frontend', False) and _is_registered_resource(res) and res_name not in names:
                 names.append(res_name)
     return names
 
@@ -224,7 +235,7 @@ def _fail_on_dependency_cycle(all_services_map):
     for svc in all_services_map.values():
         for res in svc.get('resources', []):
             name = res.get('name', '')
-            if not name or name in edges:
+            if not name or name in edges or not _is_registered_resource(res):
                 continue
             manifest = res.get('_manifest', {}) or {}
             waits = []

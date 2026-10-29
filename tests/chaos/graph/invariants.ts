@@ -32,6 +32,7 @@ export type InvariantId =
   | "tilt-rejected"
   | "tilt-cycle-accepted"
   | "tilt-cycle-unwatched"
+  | "tilt-default-enabled"
   | "tilt-missing-service"
   | "tilt-edges"
   | "tilt-focus-closure"
@@ -116,6 +117,16 @@ export function check(model: Model, seen: Observation, _gaps: Gaps = STRICT): Vi
   }
   if (tiltChecked && !cycle && !seen.tilt.ok)
     fail("tilt-rejected", `Tilt refused an acyclic graph: ${seen.tilt.error}`);
+  // A default run (no --focus) enables every service of the enabled stacks; a service named like a release phase must not shrink it.
+  if (tiltChecked && !cycle && seen.tilt.ok) {
+    const all = Object.keys(model).sort();
+    if (!same(seen.tilt.enabled, all)) {
+      fail(
+        "tilt-default-enabled",
+        `a default run enables ${show(seen.tilt.enabled)}, expected ${show(all)}`,
+      );
+    }
+  }
   if (tiltChecked && !cycle && seen.tilt.ok) {
     for (const owner of Object.keys(model).sort()) {
       const actual = seen.tilt.edges[owner];

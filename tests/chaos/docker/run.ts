@@ -110,7 +110,7 @@ function applyVariant(dir: string, variant: Variant): void {
   const manifest = JSON.parse(readFileSync(path, "utf-8"));
   for (const [key, value] of Object.entries(variant.patch)) {
     if (value === undefined) delete manifest[key];
-    else manifest[key] = value;
+    else manifest[key] = JSON.parse(JSON.stringify(value).split("$SELF").join(TARGET));
   }
   if (typeof variant.patch.appName === "string") manifest.name = variant.patch.appName;
   writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
@@ -217,7 +217,8 @@ function report(outcomes: Outcome[]): never {
   console.log(`\nACCEPTED THOUGH EXPECTED TO BE REFUSED, AND NOTHING BROKE (${lenient.length}):`);
   for (const o of lenient) console.log(`  ${o.id}`);
   writeFileSync(resolve("docker-chaos-report.json"), JSON.stringify(outcomes, null, 2));
-  process.exit(broken.length > 0 || strict.length > 0 ? 1 : 0);
+  // A value expected to be refused but accepted harmlessly also fails: it means the catalog says something the tool does not do.
+  process.exit(broken.length > 0 || strict.length > 0 || lenient.length > 0 ? 1 : 0);
 }
 
 async function main(): Promise<void> {

@@ -200,12 +200,13 @@ export const statusCommand = new Command("status")
       const unhealthyOnly = Boolean(options.unhealthy);
 
       // When the Tiltfile cannot be re-run (a cycle, a wrong-typed field in a service.json just edited), Tilt keeps the last good
-      // graph and every service still reads as healthy. Without this line the edit seems to have had no effect.
+      // graph and every service still reads as healthy. Without this line the edit seems to have had no effect. The cause varies
+      // (a first load has no previous graph), so the guidance does not claim what the stack is running.
       if (tiltfileError && !unhealthyOnly) {
         console.log();
         console.log(chalk.red(`✗ Tilt could not reload the Tiltfile: ${tiltfileError}`));
         showDetail(
-          "The stack keeps running the configuration from before your last edit. Fix the service.json; Tilt reloads on its own.",
+          "Fix the cause shown above. If Tilt does not pick the fix up, restart with flisk down and flisk up.",
         );
         console.log();
       }

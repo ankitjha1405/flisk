@@ -493,6 +493,11 @@ describe("checkCustomDockerfiles", () => {
     writeFileSync(join(root, "services/app/web/ctx/Dockerfile"), "FROM scratch\n");
     expect(checkCustomDockerfiles(root).didPass).toBe(true);
   });
+  it("treats a directory as missing: the loader checks for a regular file", () => {
+    service("api", { dockerfile: "docker" });
+    mkdirSync(join(root, "services/app/api/docker"), { recursive: true });
+    expect(checkCustomDockerfiles(root).didPass).toBe(false);
+  });
   it("names a missing file", () => {
     service("api", { dockerfile: "does/not/exist/Dockerfile" });
     const result = checkCustomDockerfiles(root);

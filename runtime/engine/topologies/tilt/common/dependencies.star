@@ -25,10 +25,12 @@ def declared_dependencies(manifest):
         return names
     for key in ['dependsOn', 'dependencies']:
         value = manifest.get(key)
-        if type(value) != 'list':
+        # All or nothing, as in the CLI (cli/src/utils/dependency-graph.ts): a list with a non-string entry has no valid reading,
+        # and keeping its string entries would give Tilt edges the CLI does not see (and its cycle check cannot account for).
+        if type(value) != 'list' or [entry for entry in value if type(entry) != 'string']:
             continue
         for entry in value:
-            if type(entry) == 'string' and entry not in names:
+            if entry not in names:
                 names.append(entry)
     return names
 
