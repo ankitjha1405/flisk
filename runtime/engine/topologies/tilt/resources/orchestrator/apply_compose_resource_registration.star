@@ -174,6 +174,21 @@ def _is_registered_resource(res):
     return app_type not in _UNREGISTERED_APP_TYPES
 
 
+def _is_unregistered_resource(name, all_services_map):
+    """True when `name` is a discovered resource of a type the registration loop skips (library, sdk, infra).
+
+    Such a resource has no Tilt resource under its own name (a library's only resource is `<name>-yaml`, which also does not
+    exist for the skipped types), so a dependsOn on it can never become a wait edge; Tilt would only print "dependency ignored".
+    """
+    service = (all_services_map or {}).get(name)
+    if not service:
+        return False
+    for res in service.get('resources', []):
+        if res.get('name', '') == name:
+            return not _is_registered_resource(res)
+    return False
+
+
 def _is_known_resource(name, all_services_map):
     """True when `name` is the name of a resource (a runnable service), not of a stack or an alias."""
     service = (all_services_map or {}).get(name)
@@ -198,7 +213,8 @@ def _resolve_dependency_to_resources(dep_name, all_services_map):
         return ['postgres']
     all_services_map = all_services_map or {}
     if _is_known_resource(dep_name, all_services_map):
-        return [dep_name]
+        # A library, sdk or infra resource gets no Tilt resource, so there is nothing to wait for.
+        return [] if _is_unregistered_resource(dep_name, all_services_map) else [dep_name]
     names = []
     for service in all_services_map.values():
         if service.get('stack', '') != dep_name and service.get('name', '') != dep_name:
@@ -322,7 +338,7 @@ def _build_resource_deps(res, res_name, manifest, resource_config, infra_deps, c
     # Resolve dependsOn from the manifest: services, stacks (their backend-side services) and the shared Postgres.
     for dep in declared_dependencies(manifest):
         resolved = _resolve_dependency_to_resources(dep, all_services_map)
-        if not resolved:
+        if not resolved and not _is_unregistered_resource(dep, all_services_map):
             # Not a service or stack: keep the name Tilt has always been given (a `-yaml` echo resource, or nothing).
             resolved = [_resolve_dependency_to_resource(dep, all_services_map or {})]
         for resolved_dep in resolved:
@@ -370,7 +386,7 @@ def resolve_manifest_dependency_names(manifest, all_services_map):
     resolved = []
     for dep in declared_dependencies(manifest):
         names = _resolve_dependency_to_resources(dep, all_services_map)
-        if not names:
+        if not names and not _is_unregistered_resource(dep, all_services_map):
             names = [_resolve_dependency_to_resource(dep, all_services_map or {})]
         for resolved_dep in names:
             if resolved_dep and resolved_dep not in resolved:

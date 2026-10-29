@@ -154,6 +154,26 @@ def test_a_stack_name_leaves_out_resources_the_registration_loop_skips(tmp_path)
 
 
 @TILT_REQUIRED
+def test_a_direct_dependency_on_a_library_or_sdk_is_no_edge_and_no_fallback(tmp_path):
+    """A library or sdk gets no Tilt resource and no `-yaml` one either, so depending on it used to make Tilt warn
+    "dependency on unknown resource ... ignored". The ordering edge never existed; now nothing is asked for."""
+    result = run_starlark(
+        tmp_path,
+        "load('@ORCHESTRATOR/apply_compose_resource_registration.star', 'build_resource_deps', 'resolve_dependency_to_resources')\n"
+        + LIBRARY_SERVICES
+        + "r = {\n"
+        "  'resolved': resolve_dependency_to_resources('kit', all_services),\n"
+        "  'deps': build_resource_deps({'name': 'ledger'}, 'ledger', {'dependsOn': ['kit', 'sdk-x', 'ghost']}, {}, [], {}, {}, None, all_services),\n"
+        "}\n",
+    )
+    assert result["resolved"] == []
+    # kit and sdk-x leave nothing behind; the unknown name ghost keeps the behaviour it always had.
+    assert "kit" not in result["deps"] and "kit-yaml" not in result["deps"]
+    assert "sdk-x" not in result["deps"] and "sdk-x-yaml" not in result["deps"]
+    assert result["deps"] == ["ghost-yaml"]
+
+
+@TILT_REQUIRED
 def test_resolve_dependency_to_resources(tmp_path):
     result = run_starlark(
         tmp_path,
