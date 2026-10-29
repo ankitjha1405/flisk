@@ -167,17 +167,23 @@ describe("service manifest compatibility", () => {
       [{ replicas: 100000 }, "replicas: expected an integer from 1 to 10"],
       [{ databaseName: "d".repeat(64) }, "databaseName: at most 63"],
       [
-        { dockerfile: "../../etc/passwd" },
-        "dockerfile: must be a path inside the service directory",
+        { dockerfile: "/etc/passwd" },
+        "dockerfile: must be a path relative to the service directory",
       ],
-      [{ dockerfile: "/etc/passwd" }, "dockerfile: must be a path inside the service directory"],
-      [{ buildContext: ".." }, "buildContext: must be a path inside the service directory"],
-      [{ build: { context: "/" } }, "build.context: must be a path inside the service directory"],
       [
-        { build: { dockerfile: "../x" } },
-        "build.dockerfile: must be a path inside the service directory",
+        { buildContext: "/opt/src" },
+        "buildContext: must be a path relative to the service directory",
       ],
-      [{ dev: { command: "x", watch: ["/etc/**"] } }, "dev.watch[0]: must be a path inside"],
+      [
+        { buildContext: "C:\\src" },
+        "buildContext: must be a path relative to the service directory",
+      ],
+      [
+        { build: { context: "/" } },
+        "build.context: must be a path relative to the service directory",
+      ],
+      [{ build: { dockerfile: "/x" } }, "build.dockerfile: must be a path relative to"],
+      [{ dev: { command: "x", watch: ["/etc/**"] } }, "dev.watch[0]: must be a path relative to"],
       [{ dev: { watch: "src" } }, "dev.watch: expected an array of strings"],
       [{ image: "nginx:1", dockerfile: "Dockerfile" }, 'set "image" or "dockerfile", not both'],
     ])("reports %j", (extra, message) => {
@@ -192,6 +198,10 @@ describe("service manifest compatibility", () => {
       { build: null },
       { dockerfile: "docker/Dockerfile.dev" },
       { buildContext: "src" },
+      // A service.json inside the project may build from a tree outside it; `flisk import` writes exactly this for a Compose app.
+      { buildContext: "../../../api" },
+      { buildContext: "../../../../l565-ext/outer-src", dockerfile: "Dockerfile" },
+      { build: { context: "../../../api", dockerfile: "Dockerfile" } },
       { build: { dockerfile: "Dockerfile", context: "." } },
       { featuresEnabled: [] },
       { restart: "always" },

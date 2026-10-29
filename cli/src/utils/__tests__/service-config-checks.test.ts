@@ -513,3 +513,50 @@ describe("checkCustomDockerfiles", () => {
     expect(() => enforceServiceConfigGate(root, {}, exit)).toThrow("exit");
   });
 });
+
+describe("the gate accepts what `flisk import` writes for a Compose app", () => {
+  // Found by the compose-import journey: the gate refused buildContext "../../../api" (a Dockerfile that stays where the Compose
+  // file had it, outside the service directory), `flisk up` exited before starting anything and the journey timed out.
+  it("an api built from a tree outside its service directory, and a database from an image", () => {
+    mkdirSync(join(root, "api"), { recursive: true });
+    writeFileSync(join(root, "api/Dockerfile"), "FROM node:22-alpine\n");
+    service(
+      "api",
+      {
+        appType: "backend",
+        stack: "composeapp",
+        port: 3000,
+        healthCheckPath: "/",
+        dependsOn: ["db"],
+        buildContext: "../../../api",
+        dockerfile: "Dockerfile",
+      },
+      "composeapp/api",
+    );
+    service(
+      "db",
+      {
+        appType: "bring-your-own",
+        stack: "composeapp",
+        port: 4000,
+        image: "postgres:16-alpine",
+        exposeViaProxy: false,
+        secrets: { required: ["POSTGRES_PASSWORD"] },
+      },
+      "composeapp/db",
+    );
+    const exit = vi.fn(() => {
+      throw new Error("exit");
+    }) as never;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => enforceServiceConfigGate(root, {}, exit)).not.toThrow();
+    expect(exit).not.toHaveBeenCalled();
+  });
+
+  it("still refuses a build context that is an absolute path, which the loader cannot resolve", () => {
+    service("api", { buildContext: "/srv/api", dockerfile: "Dockerfile" });
+    expect(checkServiceFields(root).message).toContain(
+      "buildContext: must be a path relative to the service directory",
+    );
+  });
+});

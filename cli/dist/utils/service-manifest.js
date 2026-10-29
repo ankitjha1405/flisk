@@ -232,9 +232,14 @@ const FIELD_KINDS = {
 const REPLICAS_MAX = 10;
 const DATABASE_NAME_MAX = 63;
 const isPlainObject = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
-/** A path that leaves the service directory: absolute, a Windows drive, or any `..` segment. */
-export function escapesServiceDirectory(value) {
-    return /^([\\/]|[A-Za-z]:)/.test(value) || value.split(/[\\/]/).includes("..");
+/**
+ * An absolute path or a Windows drive. Build paths are relative to the service directory (the loader joins them to it), so an
+ * absolute one can never resolve. `..` is allowed on purpose: a service.json inside the project may build from a source tree
+ * outside it (docs/layout.md, docs/byo.md), and `flisk import` writes exactly that for a Compose service whose Dockerfile stays
+ * where it was.
+ */
+export function isAbsoluteBuildPath(value) {
+    return /^([\\/]|[A-Za-z]:)/.test(value);
 }
 /** Errors for a field of the wrong type, an enum value that does not exist, an escaping path, or a conflicting source. */
 export function fieldTypeErrors(manifest, displayPath) {
@@ -296,8 +301,8 @@ export function fieldTypeErrors(manifest, displayPath) {
             : []),
     ];
     for (const [field, value] of paths) {
-        if (typeof value === "string" && escapesServiceDirectory(value)) {
-            errors.push(`${displayPath}.${field}: must be a path inside the service directory (no leading "/" and no "..")`);
+        if (typeof value === "string" && isAbsoluteBuildPath(value)) {
+            errors.push(`${displayPath}.${field}: must be a path relative to the service directory (no leading "/" or drive)`);
         }
     }
     for (const field of ["dockerfile", "buildContext"]) {

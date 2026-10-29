@@ -88,9 +88,12 @@ export const VARIANTS: Variant[] = [
     "Docker file",
     "Dockerfile\nFROM x",
   ]),
-  ...bad("buildContext", ["..", "../..", "/", "/etc", "../../../"]),
-  v("build.context=..", { build: { dockerfile: "Dockerfile", context: ".." } }, "reject"),
-  v("build.dockerfile=../x", { build: { dockerfile: "../x", context: "." } }, "reject"),
+  // An absolute build path can never resolve (the loader joins it to the service directory). `..` is allowed on purpose: a
+  // service.json may build from a tree outside the project, which is what `flisk import` writes for a Compose app.
+  ...bad("buildContext", ["/", "/etc"]),
+  ...good("buildContext", ["..", "../..", "../../../", "src"]),
+  v("build.context=..", { build: { dockerfile: "Dockerfile", context: ".." } }, "accept"),
+  v("build.dockerfile=../x", { build: { dockerfile: "../x", context: "." } }, "accept"),
   v("build.dockerfile=abs", { build: { dockerfile: "/etc/passwd", context: "." } }, "reject"),
   v("build=string", { build: "Dockerfile" }, "reject"),
   v("build=null", { build: null }, "accept"),

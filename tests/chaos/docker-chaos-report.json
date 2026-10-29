@@ -333,23 +333,29 @@
   },
   {
     "id": "build.context=..",
-    "expect": "reject",
-    "gate": false,
-    "gateSaid": "    services/main/orders/service.json.build.context: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
-    "detail": []
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
   },
   {
     "id": "build.dockerfile=../x",
-    "expect": "reject",
-    "gate": false,
-    "gateSaid": "    services/main/orders/service.json.build.dockerfile: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
-    "detail": []
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
   },
   {
     "id": "build.dockerfile=abs",
     "expect": "reject",
     "gate": false,
-    "gateSaid": "    services/main/orders/service.json.build.dockerfile: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
+    "gateSaid": "    services/main/orders/service.json.build.dockerfile: must be a path relative to the service directory (no leading \"/\" or drive) |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
     "detail": []
   },
   {
@@ -371,38 +377,57 @@
   },
   {
     "id": "buildContext#0=\"..\"",
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
+  },
+  {
+    "id": "buildContext#0=\"/\"",
     "expect": "reject",
     "gate": false,
-    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
+    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path relative to the service directory (no leading \"/\" or drive) |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
     "detail": []
   },
   {
     "id": "buildContext#1=\"../..\"",
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
+  },
+  {
+    "id": "buildContext#1=\"/etc\"",
     "expect": "reject",
     "gate": false,
-    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
+    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path relative to the service directory (no leading \"/\" or drive) |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
     "detail": []
   },
   {
-    "id": "buildContext#2=\"/\"",
-    "expect": "reject",
-    "gate": false,
-    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
-    "detail": []
+    "id": "buildContext#2=\"../../../\"",
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
   },
   {
-    "id": "buildContext#3=\"/etc\"",
-    "expect": "reject",
-    "gate": false,
-    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
-    "detail": []
-  },
-  {
-    "id": "buildContext#4=\"../../../\"",
-    "expect": "reject",
-    "gate": false,
-    "gateSaid": "    services/main/orders/service.json.buildContext: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
-    "detail": []
+    "id": "buildContext#3=\"src\"",
+    "expect": "accept",
+    "gate": true,
+    "gateSaid": "{\"schemaVersion\":1,\"data\":{\"ok\":true,\"dryRun\":true,\"stack\":null,\"services\":[\"orders\"],\"command\":\"tilt up\"},\"errors\":[]}",
+    "detail": [],
+    "tilt": true,
+    "compose": true,
+    "dockerfile": true
   },
   {
     "id": "databaseName=bad",
@@ -480,7 +505,7 @@
     "id": "dev.watch.abs",
     "expect": "reject",
     "gate": false,
-    "gateSaid": "    services/main/orders/service.json.dev.watch[0]: must be a path inside the service directory (no leading \"/\" and no \"..\") |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
+    "gateSaid": "    services/main/orders/service.json.dev.watch[0]: must be a path relative to the service directory (no leading \"/\" or drive) |   Fix: Correct the field in service.json; the published schema (flisk.sh/schema.service.json) lists each field's type",
     "detail": []
   },
   {
