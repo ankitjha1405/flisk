@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { existsSync, readFileSync } from "node:fs";
-import { FRONTEND_FRAMEWORK_IDS } from "../frontend-frameworks/ids.js";
+import { FRONTEND_FRAMEWORK_IDS } from "./frontend-framework-ids.js";
 import { declaresCommand, validateNativeServiceFields } from "./native-service.js";
 import { validateSmoke } from "./smoke.js";
 
