@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Flisk Landscape contributors
 // SPDX-License-Identifier: MIT
 import { existsSync, readFileSync } from "node:fs";
+import { FRONTEND_FRAMEWORK_IDS } from "../frontend-frameworks/ids.js";
 import { declaresCommand, validateNativeServiceFields } from "./native-service.js";
 import { validateSmoke } from "./smoke.js";
 export const SERVICE_MANIFEST_SCHEMA_VERSION = 1;
@@ -270,6 +271,15 @@ export function fieldTypeErrors(manifest, displayPath) {
     if (typeof manifest.databaseName === "string" &&
         manifest.databaseName.length > DATABASE_NAME_MAX) {
         errors.push(`${displayPath}.databaseName: at most ${DATABASE_NAME_MAX} characters (a Postgres identifier)`);
+    }
+    if (manifest.appType === "frontend" &&
+        typeof manifest.framework === "string" &&
+        !FRONTEND_FRAMEWORK_IDS.includes(manifest.framework)) {
+        bad("framework", `one of ${FRONTEND_FRAMEWORK_IDS.join(", ")}`);
+    }
+    if (manifest.appType === "frontend" && typeof replicas === "number" && replicas > 1) {
+        // Compose is generated for one frontend container, so Tilt stops looking for "<name>-1" (backends scale; frontends do not).
+        errors.push(`${displayPath}.replicas: a frontend runs as one container; replicas applies to backend services`);
     }
     if (typeof manifest.language === "string" && !/^[a-z][a-z0-9-]*$/.test(manifest.language)) {
         bad("language", "a lowercase id such as bun, python or go");

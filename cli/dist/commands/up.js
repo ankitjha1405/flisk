@@ -9,7 +9,7 @@ import { ensureProjectRuntimeAssets, generateMasterConfigs, ProjectConfigNotFoun
 import { DEVCONTAINER_DOCKER_FIX, detectHost, isContainerHost, WEBCONTAINER_UP_MESSAGE, } from "../utils/agent-host.js";
 import { handleDryRun } from "../utils/command-helpers.js";
 import { STANDARD_PORTS } from "../utils/constants.js";
-import { dependsOnOf } from "../utils/dependency-graph.js";
+import { dependsOnOf, unknownBackendNames } from "../utils/dependency-graph.js";
 import { getDeferredResourceNames, summarizeTiltBuildError } from "../utils/doctor-runtime.js";
 import { applyEnvFileSelection, assertEngineSupportsEnvFile, EnvFileError, envFileWarning, PROJECT_ENV_FILE_VAR, selectEnvFile, } from "../utils/env-selection.js";
 import { completeEnvFile } from "../utils/env-validator.js";
@@ -503,6 +503,12 @@ export const upCommand = new Command("up")
         const unknownDependsOn = foundRoot
             ? evaluateSharedPlatformPostgres(foundRoot, discoveredResources).unknownDependsOnNames
             : [];
+        const unknownBackends = foundRoot ? unknownBackendNames(discoveredResources) : [];
+        if (unknownBackends.length > 0 && !emit && !options.quiet) {
+            for (const { resource, name } of unknownBackends) {
+                console.warn(chalk.yellow(`⚠️  ${resource} has backendName "${name}", which is not a service of this project; it has no backend to wait for or call.`));
+            }
+        }
         if (unknownDependsOn.length > 0 && !emit && !options.quiet) {
             for (const { resource, name } of unknownDependsOn) {
                 console.warn(chalk.yellow(`⚠️  ${resource} dependsOn "${name}", which is not a service or stack of this project; it is ignored. Fix the name, or remove it.`));
@@ -630,6 +636,7 @@ export const upCommand = new Command("up")
                     ? { requested: options.only, declaredDependencies: dependencyNames }
                     : {}),
                 ...(unknownDependsOn.length > 0 ? { unknownDependsOn } : {}),
+                ...(unknownBackends.length > 0 ? { unknownBackendNames: unknownBackends } : {}),
                 command: dryRunCommand,
             });
             return;

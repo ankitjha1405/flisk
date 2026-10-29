@@ -6,7 +6,7 @@ Three tiers that attack how Flisk reads `service.json`, each cheaper and bigger 
 | --- | --- | --- | --- |
 | Gates (`gates/`) | `bun run chaos:gates` | generates good and corrupted `service.json` sets and runs them through the checks that stop `flisk up`; each corruption class has a known right verdict | 50,000+ sets a second, 100,000,000 in about 45 minutes |
 | Graph (`graph/`) | `bun run chaos` | random `dependsOn` edits, each followed by a look through Tilt, `flisk up` and `flisk config verify`, compared with a reference model | a few hundred edits a minute |
-| Docker (`docker/`) | `bun run chaos:docker` | changes one field to a good or bad value, and for each value `flisk up` accepts, runs the generated Tiltfile, `docker compose config` and `docker buildx build --check` | about 150 values in 5 minutes |
+| Docker (`docker/`) | `bun run chaos:docker` (add `--service storefront` for a frontend, `--service mailer` for a worker) | changes one field to a good or bad value, and for each value `flisk up` accepts, runs the generated Tiltfile, `docker compose config` and `docker buildx build --check` | about 150 values in 5 minutes |
 
 The graph tier is described below. The gates tier needs nothing but Bun. The Docker tier needs `tilt`, Docker with Compose
 and Buildx; it builds no image and starts no container (the Dockerfile's base images are replaced by a local image through

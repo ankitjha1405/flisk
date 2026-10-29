@@ -84,3 +84,5 @@ jobs:
         run: bun gates/bulk.ts --count ${{ github.event_name == 'pull_request' && '3000000' || inputs.sets || '30000000' }} --seed ${{ github.run_id }}
       - name: Docker tier (values flisk up accepts, followed into Compose and the Dockerfile)
         run: bun docker/run.ts --jobs 3
+      - name: Docker tier, frontend
+        run: bun docker/run.ts --service storefront --jobs 3

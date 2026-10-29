@@ -21,6 +21,11 @@ export declare function dependsOnOf(config: {
 } | undefined): string[];
 /** service name -> the services it waits for, sorted. A self entry stays, so the cycle check can report it. */
 export declare function dependencyEdges(resources: DiscoveredResource[]): Map<string, string[]>;
+/** Frontends whose `backendName` is no service of this project: nothing for the frontend to wait for or call. */
+export declare function unknownBackendNames(resources: DiscoveredResource[]): Array<{
+    resource: string;
+    name: string;
+}>;
 /** `dependsOn` entries that are neither a service nor a stack of this project (the caller adds its own known names). */
 export declare function unnamedEntries(resources: DiscoveredResource[], alsoKnown?: ReadonlySet<string>): Array<{
     resource: string;

@@ -62,6 +62,20 @@ export function dependencyEdges(resources: DiscoveredResource[]): Map<string, st
   return edges;
 }
 
+/** Frontends whose `backendName` is no service of this project: nothing for the frontend to wait for or call. */
+export function unknownBackendNames(
+  resources: DiscoveredResource[],
+): Array<{ resource: string; name: string }> {
+  const names = new Set(resources.map((resource) => resource.name));
+  return resources.flatMap((resource) => {
+    const backend = resource.config?.backendName;
+    const frontend = (resource.config?.appType ?? resource.type) === "frontend";
+    return frontend && typeof backend === "string" && backend && !names.has(backend)
+      ? [{ resource: resource.name, name: backend }]
+      : [];
+  });
+}
+
 /** `dependsOn` entries that are neither a service nor a stack of this project (the caller adds its own known names). */
 export function unnamedEntries(
   resources: DiscoveredResource[],

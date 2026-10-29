@@ -271,6 +271,10 @@ def main():
     # Paths below (the snapshot file, the services) are relative to the project, whatever directory Tilt started us in.
     os.chdir(find_project_root())
 
+    # Tilt reads our output through a pipe, where Python buffers it: without this "Changes detected" shows up minutes late.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(line_buffering=True)
+
     if command == "save":
         services = get_current_services()
         save_snapshot(services)

@@ -202,6 +202,27 @@ describe("service manifest compatibility", () => {
       expect(errorsFor(extra)).toEqual([]);
     });
 
+    it("refuses a frontend framework that is not registered, which would stop the Vite generator", () => {
+      for (const framework of ["Next", "no such", "react;rm", "", "../react"]) {
+        expect(errorsFor({ appType: "frontend", framework }).join("\n")).toContain(
+          "framework: expected one of",
+        );
+      }
+      for (const framework of ["react", "vue", "tanstack-router", "next"]) {
+        expect(errorsFor({ appType: "frontend", framework })).toEqual([]);
+      }
+      // A backend's framework (hono, express, ...) is not in this list and is not checked here.
+      expect(errorsFor({ appType: "backend", framework: "hono" })).toEqual([]);
+    });
+
+    it("refuses replicas above 1 on a frontend, which Compose is not generated for", () => {
+      expect(errorsFor({ appType: "frontend", replicas: 3 }).join("\n")).toContain(
+        "a frontend runs as one container",
+      );
+      expect(errorsFor({ appType: "frontend", replicas: 1 })).toEqual([]);
+      expect(errorsFor({ appType: "backend", replicas: 3 })).toEqual([]);
+    });
+
     it("leaves a local-process service alone", () => {
       expect(errorsFor({ command: "node x.js", replicas: 0, traefik: "x" })).toEqual([]);
     });

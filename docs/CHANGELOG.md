@@ -12,6 +12,8 @@ Notable changes to the `flisk` CLI. Versions match [npm](https://www.npmjs.com/p
 - `flisk up --only <service>` starts the service's `backendName` and the stack's services, as the Tiltfile waits for them.
 - A service named `alpha`, `beta` or `pre-alpha` is no longer taken for the release phase of that name by `--focus`, which started every service.
 - A new `service.json` now reloads a running Tilt: the discovery daemon wrote its snapshot outside the watched path and scanned `services/product` from inside `.flisk/.flisk-out`.
+- `flisk up` now also refuses a frontend `framework` that is not registered (it used to stop inside Tilt with "Unknown frontend framework for Vite generation") and `replicas` above 1 on a frontend (Tilt looked for a `<name>-1` Compose service that is never generated), and warns about a frontend whose `backendName` is no service of the project (`unknownBackendNames` in the dry-run JSON).
+- The discovery daemon's output is line-buffered, so "Changes detected" shows in Tilt's log when it happens instead of minutes later.
 - New tests: `tests/chaos` (random `service.json` edits checked against Tilt, `flisk up` and `flisk config verify`; a Docker tier that follows each value into the generated Compose file and Dockerfile; a bulk check that runs millions of good and corrupted `service.json` sets through the gates).
 
 ## 1.4.3 (2026-10-25)

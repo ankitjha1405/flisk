@@ -237,6 +237,12 @@ function checkEnv(
   }
 }
 
+/** Tilt names a cycle starting wherever it entered it, so the same cycle reads differently run to run: compare its members. */
+function sameCycle(error: string): string {
+  const match = /(cycle detected in resource dependency graph): (.+)$/.exec(error);
+  return match ? `${match[1]}: ${[...new Set(match[2].split(" -> "))].sort().join(",")}` : error;
+}
+
 /** The same service.json files must give the same graph whether or not earlier runs left generated files behind. */
 export function checkWarmCold(
   warm: TiltGraph,
@@ -247,7 +253,7 @@ export function checkWarmCold(
   const strip = (graph: TiltGraph) =>
     graph.ok
       ? { ok: true, edges: Object.entries(graph.edges).sort(), enabled: graph.enabled }
-      : { ok: false, error: graph.error };
+      : { ok: false, error: sameCycle(graph.error) };
   const a = JSON.stringify(strip(warm));
   const b = JSON.stringify(strip(cold));
   const out: Violation[] =

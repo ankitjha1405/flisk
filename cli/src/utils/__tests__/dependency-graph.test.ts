@@ -6,6 +6,7 @@ import {
   declaredDependsOn,
   dependencyEdges,
   dependsOnOf,
+  unknownBackendNames,
   unnamedEntries,
 } from "../dependency-graph.js";
 
@@ -100,5 +101,18 @@ describe("unnamedEntries", () => {
       new Set(["postgres"]),
     );
     expect(found).toEqual([{ resource: "web", name: "ghost" }]);
+  });
+});
+
+describe("unknownBackendNames", () => {
+  it("lists a frontend whose backendName is no service", () => {
+    const found = unknownBackendNames([
+      svc("api"),
+      svc("ui", { appType: "frontend", backendName: "api" }),
+      svc("lost", { appType: "frontend", backendName: "ghost" }),
+      svc("plain", { appType: "frontend" }),
+      svc("back", { backendName: "ghost" }),
+    ]);
+    expect(found).toEqual([{ resource: "lost", name: "ghost" }]);
   });
 });
