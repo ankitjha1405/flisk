@@ -31,6 +31,7 @@ export const KNOWN_GAPS: Gaps = {};
 export type InvariantId =
   | "tilt-rejected"
   | "tilt-cycle-accepted"
+  | "tilt-cycle-unwatched"
   | "tilt-missing-service"
   | "tilt-edges"
   | "tilt-focus-closure"
@@ -100,6 +101,19 @@ export function check(model: Model, seen: Observation, _gaps: Gaps = STRICT): Vi
   // Tilt keeps self entries out of resource_deps on purpose, so only a real cycle must make it refuse the Tiltfile.
   if (broken.length === 0 && cycle && seen.tilt.ok)
     fail("tilt-cycle-accepted", `Tilt loaded a graph with the cycle ${cycle.join(" -> ")}`);
+  // Tilt's own cycle check stops watching the service.json files, so fixing the cycle in the editor never reloads a running Tilt.
+  // Our Starlark has to catch the cycle first (an ordinary error keeps every watch).
+  if (
+    broken.length === 0 &&
+    cycle &&
+    !seen.tilt.ok &&
+    seen.tilt.error.startsWith("cycle detected in resource dependency graph")
+  ) {
+    fail(
+      "tilt-cycle-unwatched",
+      `Tilt's own cycle check rejected ${cycle.join(" -> ")}; it stops watching service.json, so fixing it does not reload`,
+    );
+  }
   if (tiltChecked && !cycle && !seen.tilt.ok)
     fail("tilt-rejected", `Tilt refused an acyclic graph: ${seen.tilt.error}`);
   if (tiltChecked && !cycle && seen.tilt.ok) {
@@ -239,7 +253,9 @@ function checkEnv(
 
 /** Tilt names a cycle starting wherever it entered it, so the same cycle reads differently run to run: compare its members. */
 function sameCycle(error: string): string {
-  const match = /(cycle detected in resource dependency graph): (.+)$/.exec(error);
+  const match = /(cycle detected in resource dependency graph|circular dependsOn): (.+)$/.exec(
+    error,
+  );
   return match ? `${match[1]}: ${[...new Set(match[2].split(" -> "))].sort().join(",")}` : error;
 }
 

@@ -99,8 +99,7 @@ export const statusCommand = new Command("status")
             if (text) {
                 const deferred = getDeferredResourceNames(discovery.resources);
                 try {
-                    if (options.json)
-                        readiness = evaluateTiltReadiness(text, deferred).result;
+                    readiness = evaluateTiltReadiness(text, deferred).result;
                 }
                 catch {
                     readiness = null;
@@ -113,6 +112,7 @@ export const statusCommand = new Command("status")
                 }
             }
         }
+        const tiltfileError = readiness?.failures.find((failure) => failure.name === "(Tiltfile)")?.message ?? null;
         if (options.json) {
             const errors = queryError ? [{ code: "TILT_STATUS_UNAVAILABLE", message: queryError }] : [];
             // A native run answers the readiness question agents poll (data.tilt.readiness.ready) from its own run state.
@@ -137,6 +137,7 @@ export const statusCommand = new Command("status")
                     resourcesQueried: options.tilt && tiltAvailable,
                     resources: tiltResources,
                     readiness,
+                    tiltfileError,
                 },
                 resourceCount: discovery.resources.length,
                 resources: discovery.resources.map((resource) => ({
@@ -176,6 +177,14 @@ export const statusCommand = new Command("status")
         console.log(chalk.bold("Stacks:"), `${discovery.stacks.length} defined`);
         const hasStates = serviceStates !== null && Object.keys(serviceStates).length > 0;
         const unhealthyOnly = Boolean(options.unhealthy);
+        // When the Tiltfile cannot be re-run (a cycle, a wrong-typed field in a service.json just edited), Tilt keeps the last good
+        // graph and every service still reads as healthy. Without this line the edit seems to have had no effect.
+        if (tiltfileError && !unhealthyOnly) {
+            console.log();
+            console.log(chalk.red(`✗ Tilt could not reload the Tiltfile: ${tiltfileError}`));
+            showDetail("The stack keeps running the configuration from before your last edit. Fix the service.json; Tilt reloads on its own.");
+            console.log();
+        }
         // With service states the grouped "Services:" section below replaces the plain per-stack counts.
         if (!hasStates && !unhealthyOnly) {
             for (const stack of discovery.stacks) {

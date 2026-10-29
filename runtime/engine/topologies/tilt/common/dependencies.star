@@ -31,3 +31,48 @@ def declared_dependencies(manifest):
             if type(entry) == 'string' and entry not in names:
                 names.append(entry)
     return names
+
+
+def find_dependency_cycle(edges):
+    """One cycle in a dependency graph, as a list of names that starts and ends with the same name, or [] when there is none.
+
+    Starlark has neither recursion nor `while`, so this is a depth-first search with an explicit stack inside a bounded loop.
+
+    Args:
+        edges: dict of name -> list of names it waits for. Names that are not keys are ignored; a self edge is not a cycle.
+
+    Returns:
+        list: The cycle (for example ['a', 'b', 'a']), or []
+    """
+    steps = 10
+    for name in edges:
+        steps += 2 + 2 * len(edges[name])
+    state = {}
+    for start in sorted(edges.keys()):
+        if state.get(start, 0) != 0:
+            continue
+        state[start] = 1
+        stack = [[start, 0]]
+        path = [start]
+        for _ in range(steps):
+            if not stack:
+                break
+            frame = stack[-1]
+            neighbours = edges.get(frame[0], [])
+            if frame[1] < len(neighbours):
+                nxt = neighbours[frame[1]]
+                frame[1] += 1
+                if nxt == frame[0] or nxt not in edges:
+                    continue
+                if state.get(nxt, 0) == 1:
+                    return path[path.index(nxt):] + [nxt]
+                if state.get(nxt, 0) == 0:
+                    state[nxt] = 1
+                    stack.append([nxt, 0])
+                    path.append(nxt)
+            else:
+                state[frame[0]] = 2
+                stack.pop()
+                path.pop()
+    return []
+

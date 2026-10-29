@@ -39,7 +39,11 @@ export function tiltGraph(dir: string, services: string[], focus?: string[]): Ti
       },
     );
     if (run.status !== 0) {
-      const lines = `${run.stderr}\n${run.stdout}`.split("\n").map((line) => line.trim());
+      const text = `${run.stderr}\n${run.stdout}`;
+      // Our Starlark banner names the circle on its own line; keep that, not the banner's last rule line.
+      const circle = /CIRCULAR dependsOn[\s\S]*?\n\s+(\S[^\n]* -> [^\n]+)\n/.exec(text)?.[1];
+      if (circle) return { ok: false, error: `circular dependsOn: ${circle.trim()}` };
+      const lines = text.split("\n").map((line) => line.trim());
       return { ok: false, error: lines.filter(Boolean).pop() ?? `tilt exited ${run.status}` };
     }
     const result = JSON.parse(run.stdout) as {

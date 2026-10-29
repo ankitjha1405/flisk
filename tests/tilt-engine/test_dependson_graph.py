@@ -149,3 +149,40 @@ def test_resolve_dependency_to_resources(tmp_path):
         "unknown": [],
         "no map": [],
     }
+
+
+def cycle(tmp_path: Path, edges: dict) -> list:
+    return run_starlark(
+        tmp_path,
+        "load('@COMMON/dependencies.star', 'find_dependency_cycle')\n"
+        f"r = {{'cycle': find_dependency_cycle({edges!r})}}\n",
+    )["cycle"]
+
+
+@TILT_REQUIRED
+def test_find_dependency_cycle_finds_a_circle_and_names_it(tmp_path):
+    assert cycle(tmp_path, {"a": ["b"], "b": ["a"]}) == ["a", "b", "a"]
+    found = cycle(tmp_path, {"a": ["b"], "b": ["c"], "c": ["a"], "d": []})
+    assert found[0] == found[-1] and set(found) == {"a", "b", "c"}
+    # Only the circle: a service that merely waits for it is not part of it.
+    assert set(cycle(tmp_path, {"x": ["a"], "a": ["b"], "b": ["a"]})) == {"a", "b"}
+
+
+@TILT_REQUIRED
+def test_find_dependency_cycle_has_no_false_positives(tmp_path):
+    assert cycle(tmp_path, {}) == []
+    assert cycle(tmp_path, {"a": [], "b": ["a"], "c": ["a", "b"]}) == []
+    # A diamond reaches the same service twice and is not a circle.
+    assert cycle(tmp_path, {"a": ["b", "c"], "b": ["d"], "c": ["d"], "d": []}) == []
+    # A self edge is dropped on purpose (_build_resource_deps), and a name that is no service is ignored.
+    assert cycle(tmp_path, {"a": ["a", "ghost"]}) == []
+
+
+@TILT_REQUIRED
+def test_find_dependency_cycle_handles_a_long_chain_and_a_long_circle(tmp_path):
+    chain = {f"s{i}": [f"s{i + 1}"] for i in range(300)}
+    chain["s300"] = []
+    assert cycle(tmp_path, chain) == []
+    chain["s300"] = ["s0"]
+    found = cycle(tmp_path, chain)
+    assert found[0] == found[-1] and len(found) == 302
