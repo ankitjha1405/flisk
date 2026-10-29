@@ -81,7 +81,11 @@ jobs:
       # The gates tier imports cli/src and spreads the sets over the runner's cores with worker threads. The seed changes every run, so each run
       # looks at new sets; a failure prints the seed of an example set.
       - name: Gates tier (good and corrupted service.json sets)
-        run: bun gates/bulk.ts --count ${{ github.event_name == 'pull_request' && '3000000' || inputs.sets || '30000000' }} --seed ${{ github.run_id }}
+        # The input goes through env, not into the command line: a workflow_dispatch input expanded into `run:` is a template injection.
+        env:
+          CHAOS_SETS: ${{ github.event_name == 'pull_request' && '3000000' || inputs.sets || '30000000' }}
+          CHAOS_RUN_ID: ${{ github.run_id }}
+        run: bun gates/bulk.ts --count "$CHAOS_SETS" --seed "$CHAOS_RUN_ID"
       - name: Docker tier (values flisk up accepts, followed into Compose and the Dockerfile)
         run: bun docker/run.ts --jobs 3
       - name: Docker tier, frontend
