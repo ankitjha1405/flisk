@@ -52,26 +52,29 @@ export function formatUpSuccess(port, options = {}) {
     lines.push("Flisk is up.");
     lines.push(`Tilt UI: http://localhost:${port}`);
     if (serviceHealth.length > 0) {
+        // Services with a URL come first. Tilt lists its own resources ((Tiltfile), golden-layers-build, init-networks, the
+        // *-config-gen steps, ...) in no useful order, and cutting that mix at ten dropped a running service into "and N more"
+        // as soon as one more internal resource existed. Array.prototype.sort is stable, so each group keeps Tilt's order.
+        const services = [...serviceHealth].sort((a, b) => Number(Boolean(b.url)) - Number(Boolean(a.url)));
         lines.push("Services:");
-        for (const svc of serviceHealth.slice(0, 10)) {
+        for (const svc of services.slice(0, 10)) {
             const icon = svc.status === "ready" ? "✓" : svc.status === "failed" ? "✗" : "⟳";
             const urlPart = svc.url ? ` → ${svc.url}` : "";
             lines.push(`  ${icon} ${svc.name}${urlPart}`);
         }
-        if (serviceHealth.length > 10) {
-            lines.push(`  … and ${serviceHealth.length - 10} more`);
+        if (services.length > 10) {
+            lines.push(`  … and ${services.length - 10} more`);
         }
-        // Health check URLs for test infrastructure and monitoring
+        // Health check URLs for test infrastructure and monitoring: only services that have one, so internals do not use up the ten.
+        const withUrl = services.filter((svc) => svc.url);
         lines.push("Health checks:");
-        for (const svc of serviceHealth.slice(0, 10)) {
+        for (const svc of withUrl.slice(0, 10)) {
             const icon = svc.status === "ready" ? "✓" : svc.status === "failed" ? "✗" : "⟳";
-            if (svc.url) {
-                const healthUrl = svc.url.endsWith("/health") ? svc.url : `${svc.url}/health`;
-                lines.push(`  ${icon} ${svc.name}: ${healthUrl}`);
-            }
+            const healthUrl = svc.url?.endsWith("/health") ? svc.url : `${svc.url}/health`;
+            lines.push(`  ${icon} ${svc.name}: ${healthUrl}`);
         }
-        if (serviceHealth.length > 10) {
-            lines.push(`  … and ${serviceHealth.length - 10} more`);
+        if (withUrl.length > 10) {
+            lines.push(`  … and ${withUrl.length - 10} more`);
         }
     }
     else if (appUrls.length > 0) {
