@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 import chalk from "chalk";
 import { Command } from "commander";
+import { dependsOnOf } from "../utils/dependency-graph.js";
 import { createDiscoveryContext } from "../utils/discovery-context.js";
 import { getDeferredResourceNames } from "../utils/doctor-runtime.js";
 import { runCommand } from "../utils/errors.js";
@@ -105,7 +106,7 @@ export const statusCommand = new Command("status")
                     readiness = null;
                 }
                 try {
-                    serviceStates = deriveServiceStates(text, Object.fromEntries(discovery.resources.map((r) => [r.name, r.config?.dependsOn ?? []])), deferred);
+                    serviceStates = deriveServiceStates(text, Object.fromEntries(discovery.resources.map((r) => [r.name, dependsOnOf(r.config)])), deferred);
                 }
                 catch {
                     serviceStates = null;

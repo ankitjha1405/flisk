@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Flisk Landscape contributors
 // SPDX-License-Identifier: MIT
+
 import { existsSync } from "node:fs";
 import { connect } from "node:net";
 import { join } from "node:path";
@@ -20,6 +21,7 @@ import {
 } from "../utils/agent-host.js";
 import { handleDryRun } from "../utils/command-helpers.js";
 import { STANDARD_PORTS } from "../utils/constants.js";
+import { dependsOnOf } from "../utils/dependency-graph.js";
 import { getDeferredResourceNames, summarizeTiltBuildError } from "../utils/doctor-runtime.js";
 import {
   applyEnvFileSelection,
@@ -82,6 +84,7 @@ import {
   stackExists,
   warnAboutSkippedFiles,
 } from "../utils/services.js";
+import { evaluateSharedPlatformPostgres } from "../utils/shared-platform-postgres.js";
 import {
   buildSmokePlans,
   formatSmokeFailure,
@@ -664,6 +667,19 @@ export const upCommand = new Command("up")
             emit?.({ ok: false }, [{ code: "INVALID_SERVICE_CONFIG", message }]),
         });
       }
+      // A dependsOn name that is no service, stack or shared Postgres is dropped by the Tiltfile; say so instead of starting without it.
+      const unknownDependsOn = foundRoot
+        ? evaluateSharedPlatformPostgres(foundRoot, discoveredResources).unknownDependsOnNames
+        : [];
+      if (unknownDependsOn.length > 0 && !emit && !options.quiet) {
+        for (const { resource, name } of unknownDependsOn) {
+          console.warn(
+            chalk.yellow(
+              `⚠️  ${resource} dependsOn "${name}", which is not a service or stack of this project; it is ignored. Fix the name, or remove it.`,
+            ),
+          );
+        }
+      }
       // A project without schemaVersion keeps working; say how to add it, but only where a person is reading.
       if (foundRoot && !emit && !options.quiet) {
         warnSchemaVersions(foundRoot, discoveredResources);
@@ -820,6 +836,7 @@ export const upCommand = new Command("up")
           ...(options.only
             ? { requested: options.only, declaredDependencies: dependencyNames }
             : {}),
+          ...(unknownDependsOn.length > 0 ? { unknownDependsOn } : {}),
           command: dryRunCommand,
         });
         return;
@@ -942,7 +959,7 @@ export const upCommand = new Command("up")
         if (uiReady && emit) {
           const deferred = getDeferredResourceNames(discoveredResources);
           const dependsOn = Object.fromEntries(
-            discoveredResources.map((r) => [r.name, r.config?.dependsOn ?? []]),
+            discoveredResources.map((r) => [r.name, dependsOnOf(r.config)]),
           );
           const readiness = await waitForTiltResourcesReady(port, {
             deferred,
@@ -991,7 +1008,7 @@ export const upCommand = new Command("up")
         if (uiReady && !emit) {
           const deferred = getDeferredResourceNames(discoveredResources);
           const dependsOn = Object.fromEntries(
-            discoveredResources.map((r) => [r.name, r.config?.dependsOn ?? []]),
+            discoveredResources.map((r) => [r.name, dependsOnOf(r.config)]),
           );
           const progress = createUpProgressReporter({
             write: (text) => process.stdout.write(text),
@@ -1046,7 +1063,7 @@ export const upCommand = new Command("up")
         if (uiReady && !options.quiet && !startupFailed) {
           const deferred = getDeferredResourceNames(discoveredResources);
           const dependsOn = Object.fromEntries(
-            discoveredResources.map((r) => [r.name, r.config?.dependsOn ?? []]),
+            discoveredResources.map((r) => [r.name, dependsOnOf(r.config)]),
           );
           const readiness = await waitForTiltResourcesReady(port, {
             deferred,
@@ -1143,7 +1160,7 @@ export const upCommand = new Command("up")
       if (!options.quiet && result.exitCode === 0 && !printedSuccess) {
         const deferred = getDeferredResourceNames(discoveredResources);
         const dependsOn = Object.fromEntries(
-          discoveredResources.map((r) => [r.name, r.config?.dependsOn ?? []]),
+          discoveredResources.map((r) => [r.name, dependsOnOf(r.config)]),
         );
         const readiness = await waitForTiltResourcesReady(port, {
           deferred,

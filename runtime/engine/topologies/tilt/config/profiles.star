@@ -76,6 +76,17 @@ def _get_resources_for_domain(domain_name):
     return resources
 
 
+def _names_a_service(target):
+    """True when a discovered stack, service or resource is called `target`."""
+    for service in get_app_resources_ref():
+        if service.get("name", "") == target or service.get("stack", "") == target:
+            return True
+        for res in service.get("resources", []):
+            if res.get("name", "") == target:
+                return True
+    return False
+
+
 def get_all_needed_services(targets, skip_frontend = False):
     needed = {}
     visited = {}
@@ -253,7 +264,9 @@ def apply_focus_filter(cfg):
     expanded = []
     for target in parsed_targets:
         target_lower = target.lower()
-        if target_lower in dynamic_phases:
+        # A service or stack that is itself called pre-alpha, alpha or beta is that service, not the release phase;
+        # expanding it to the phase's (often empty) list turned focus mode off and started every service.
+        if target_lower in dynamic_phases and not _names_a_service(target):
             phase_services = dynamic_phases[target_lower]
             for svc in phase_services:
                 expanded.append(svc)
